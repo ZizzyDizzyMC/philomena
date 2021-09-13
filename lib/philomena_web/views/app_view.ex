@@ -198,4 +198,8 @@ defmodule PhilomenaWeb.AppView do
   def booru_alt_donation do
     Application.get_env(:philomena, :booru_alt_donation)
   end
+  
+  def booru_repo do
+    Application.get_env(:philomena, :booru_repo)
+  end
 end

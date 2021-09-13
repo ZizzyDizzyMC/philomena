@@ -16,7 +16,7 @@ footer#footer
 
   #serving_info
     ' Powered by
-    a> href="https://github.com/ZizzyDizzyMC/philomena" philomena
+    a> href="#{booru_repo()}" philomena
     | (
     = render_time(@conn)
     | ms)
