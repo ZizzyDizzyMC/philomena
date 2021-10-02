@@ -183,6 +183,10 @@ defmodule PhilomenaWeb.AppView do
     String.downcase(booru_name())
   end
   
+  def booru_name_lowercase_clean do
+    String.replace(booru_name_lowercase()," ","_")
+  end
+  
   def booru_tagline do
     Application.get_env(:philomena, :booru_tagline)
   end
