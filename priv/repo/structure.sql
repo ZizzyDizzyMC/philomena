@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 12.8 (Ubuntu 12.8-0ubuntu0.20.04.1)
--- Dumped by pg_dump version 12.8 (Ubuntu 12.8-0ubuntu0.20.04.1)
+-- Dumped from database version 13.1 (Debian 13.1-1.pgdg100+1)
+-- Dumped by pg_dump version 13.2 (Debian 13.2-1.pgdg100+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -4832,11 +4832,11 @@ ALTER TABLE ONLY public.image_tag_locks
 
 
 --
--- Name: image_views image_views; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: image_views image_views_image_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.image_views
-    ADD CONSTRAINT image_views FOREIGN KEY (image_id) REFERENCES public.images(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT image_views_image_id_fkey FOREIGN KEY (image_id) REFERENCES public.images(id);
 
 
 --
@@ -4873,4 +4873,3 @@ INSERT INTO public."schema_migrations" (version) VALUES (20210226220000);
 INSERT INTO public."schema_migrations" (version) VALUES (20210301012137);
 INSERT INTO public."schema_migrations" (version) VALUES (20210308231844);
 INSERT INTO public."schema_migrations" (version) VALUES (20210427022351);
-INSERT INTO public."schema_migrations" (version) VALUES (20210811202646);
