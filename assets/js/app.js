@@ -16,16 +16,3 @@ import './vendor/values-entries.polyfill';
 // Our code
 import './ujs';
 import './when-ready';
-
-import '../css/themes/default.scss';
-import '../css/themes/dark.scss';
-import '../css/themes/red.scss';
-import '../css/themes/olddefault.scss';
-import '../css/themes/ponerpics-default.scss';
-import '../css/themes/manebooru-fuchsia.scss';
-import '../css/themes/manebooru-green.scss';
-import '../css/themes/manebooru-orange.scss';
-import '../css/themes/twibooru-default.scss';
-import '../css/themes/furbooru-default.scss';
-import '../css/themes/bronyhub-default.scss';
-import '../css/themes/ponybooru-default.scss';
