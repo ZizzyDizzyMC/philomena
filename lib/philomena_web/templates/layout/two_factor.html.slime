@@ -11,6 +11,6 @@ html lang="en"
     link rel="icon" href="/favicon.ico" type="image/x-icon"
     link rel="icon" href="/favicon.svg" type="image/svg+xml"
 
-  body.twofactor
-    .twofactor__container
+  body.minimal
+    .minimal__container
       = @inner_content

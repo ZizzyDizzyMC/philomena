@@ -65,6 +65,7 @@ defmodule Philomena.Users.User do
     field :slug, :string
     field :role, :string, default: "user"
     field :description, :string
+    field :description_md, :string
     field :avatar, :string
 
     # Settings
@@ -78,7 +79,7 @@ defmodule Philomena.Users.User do
     field :fancy_tag_field_in_settings, :boolean, default: true
     field :autorefresh_by_default, :boolean, default: false
     field :anonymous_by_default, :boolean, default: false
-    field :scale_large_images, :boolean, default: true
+    field :scale_large_images, :string, default: "true"
     field :comments_newest_first, :boolean, default: true
     field :comments_always_jump_to_last, :boolean, default: true
     field :comments_per_page, :integer, default: 20
@@ -115,9 +116,11 @@ defmodule Philomena.Users.User do
     field :last_renamed_at, :utc_datetime
     field :deleted_at, :utc_datetime
     field :scratchpad, :string
+    field :scratchpad_md, :string
     field :secondary_role, :string
     field :hide_default_role, :boolean, default: false
     field :senior_staff, :boolean, default: false
+    field :bypass_rate_limits, :boolean, default: false
 
     # For avatar validation/persistence
     field :avatar_width, :integer, virtual: true
@@ -271,7 +274,15 @@ defmodule Philomena.Users.User do
 
   def update_changeset(user, attrs, roles) do
     user
-    |> cast(attrs, [:name, :email, :role, :secondary_role, :hide_default_role, :senior_staff])
+    |> cast(attrs, [
+      :name,
+      :email,
+      :role,
+      :secondary_role,
+      :hide_default_role,
+      :senior_staff,
+      :bypass_rate_limits
+    ])
     |> validate_required([:name, :email, :role])
     |> validate_inclusion(:role, ["user", "assistant", "moderator", "admin"])
     |> put_assoc(:roles, roles)
@@ -347,6 +358,7 @@ defmodule Philomena.Users.User do
     )
     |> validate_inclusion(:images_per_page, 15..500)
     |> validate_inclusion(:comments_per_page, 15..100)
+	|> validate_inclusion(:scale_large_images, ["false", "partscaled", "true"])
     |> Search.validate_search(:watched_images_query_str, user, true)
     |> Search.validate_search(:watched_images_exclude_str, user, true)
   end
