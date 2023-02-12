@@ -41,7 +41,8 @@
     {
       "title": "Changelog",
       "url": "CHANGELOG_URL",
-      "bold": true
+      "bold": true,
+      "target": "_blank"
     },
     {
       "title": "FAQs",
@@ -90,7 +91,8 @@
     },
     {
       "title": "Twitter",
-      "url": "TWITTER_URL"
+      "url": "TWITTER_URL",
+      "target": "_blank"
     }
   ]
 }

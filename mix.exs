@@ -11,7 +11,8 @@ defmodule Philomena.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      dialyzer: [plt_add_apps: [:mix]]
+      dialyzer: [plt_add_apps: [:mix]],
+      rustler_crates: [philomena: []]
     ]
   end
 
@@ -34,7 +35,7 @@ defmodule Philomena.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.5"},
+      {:phoenix, "~> 1.6"},
       {:phoenix_pubsub, "~> 2.0"},
       {:phoenix_ecto, "~> 4.2"},
       {:ecto_sql, "~> 3.5"},
@@ -68,6 +69,9 @@ defmodule Philomena.MixProject do
       {:castore, "~> 0.1"},
       {:mint, "~> 1.2"},
       {:exq, "~> 0.14"},
+
+      # Markdown
+      {:rustler, "~> 0.22"},
 
       # Linting
       {:credo, "~> 1.5", only: [:dev, :test], override: true},
