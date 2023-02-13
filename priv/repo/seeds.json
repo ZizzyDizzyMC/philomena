@@ -86,7 +86,7 @@
     {
       "name": "Show Discussion",
       "short_name": "pony",
-      "description": "Discuss the show, characters, and theories",
+      "description": "Discuss TV shows and movies, as well as their characters and theories.",
       "access_level": "normal"
     },
     {

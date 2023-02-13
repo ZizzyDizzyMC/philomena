@@ -3,7 +3,6 @@ defmodule Philomena.Images.Image do
 
   import Ecto.Changeset
   import Ecto.Query
-  import Philomena.MarkdownWriter
 
   alias Philomena.ImageIntensities.ImageIntensity
   alias Philomena.ImageVotes.ImageVote
@@ -68,7 +67,6 @@ defmodule Philomena.Images.Image do
     field :votes_count, :integer, default: 0
     field :source_url, :string
     field :description, :string, default: ""
-    field :description_md, :string, default: ""
     field :image_sha512_hash, :string
     field :image_orig_sha512_hash, :string
     field :deletion_reason, :string
@@ -85,7 +83,6 @@ defmodule Philomena.Images.Image do
     field :destroyed_content, :boolean
     field :hidden_image_key, :string
     field :scratchpad, :string
-    field :scratchpad_md, :string
     field :hides_count, :integer, default: 0
 
     # todo: can probably remove these now
@@ -126,7 +123,6 @@ defmodule Philomena.Images.Image do
     |> change(first_seen_at: now)
     |> change(attribution)
     |> validate_length(:description, max: 50_000, count: :bytes)
-    |> put_markdown(attrs, :description, :description_md)
     |> validate_format(:source_url, ~r/\Ahttps?:\/\//)
   end
 
@@ -223,7 +219,6 @@ defmodule Philomena.Images.Image do
     image
     |> cast(attrs, [:description])
     |> validate_length(:description, max: 50_000, count: :bytes)
-    |> put_markdown(attrs, :description, :description_md)
   end
 
   def hide_changeset(image, attrs, user) do
@@ -278,7 +273,6 @@ defmodule Philomena.Images.Image do
 
   def scratchpad_changeset(image, attrs) do
     cast(image, attrs, [:scratchpad])
-    |> put_markdown(attrs, :scratchpad, :scratchpad_md)
   end
 
   def remove_source_history_changeset(image) do
