@@ -35,6 +35,7 @@ services:
       - MAILER_ADDRESS=noreply@philomena.local
       - START_ENDPOINT=true
       - SITE_DOMAINS=localhost
+      - BOORU_ALT_DONATION=Not-Set
     working_dir: /srv/philomena
     tty: true
     volumes:

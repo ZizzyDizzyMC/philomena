@@ -1,8 +1,11 @@
 #!/usr/bin/env sh
 
+. "$HOME/.cargo/env"
+
 # For compatibility with musl libc
 export CARGO_FEATURE_DISABLE_INITIAL_EXEC_TLS=1
 export CARGO_HOME=/srv/philomena/.cargo
+export RUSTFLAGS="-C target-feature=-crt-static"
 
 background() {
   while :; do

@@ -3,12 +3,14 @@ FROM elixir:1.13.1-alpine
 RUN (echo "https://github.com/philomena-dev/prebuilt-ffmpeg/raw/master"; cat /etc/apk/repositories) > /tmp/repositories \
     && cp /tmp/repositories /etc/apk/repositories \
     && apk update --allow-untrusted \
-    && apk add inotify-tools build-base git ffmpeg ffmpeg-dev npm nodejs file-dev libjpeg-turbo-dev libpng-dev gifsicle optipng libjpeg-turbo-utils librsvg imagemagick postgresql14-client wget rust cargo --allow-untrusted \
+    && apk add inotify-tools build-base git ffmpeg ffmpeg-dev npm nodejs file-dev libjpeg-turbo-dev libpng-dev gifsicle optipng libjpeg-turbo-utils librsvg imagemagick postgresql14-client wget --allow-untrusted \
     && mix local.hex --force \
-    && mix local.rebar --force
+    && mix local.rebar --force \
+    && wget -qO - https://sh.rustup.rs | sh -s -- -y
 
 ADD https://api.github.com/repos/philomena-dev/cli_intensities/git/refs/heads/master /tmp/cli_intensities_version.json
 RUN git clone --depth 1 https://github.com/philomena-dev/cli_intensities /tmp/cli_intensities \
+    && ln -s /usr/lib/librsvg-2.so.2 /usr/lib/librsvg-2.so \
     && cd /tmp/cli_intensities \
     && make -j$(nproc) install
 
@@ -21,5 +23,4 @@ COPY docker/app/run-development /usr/local/bin/run-development
 COPY docker/app/run-test /usr/local/bin/run-test
 COPY docker/app/safe-rsvg-convert /usr/local/bin/safe-rsvg-convert
 COPY docker/app/purge-cache /usr/local/bin/purge-cache
-ENV PATH=$PATH:/root/.cargo/bin
 CMD run-development
