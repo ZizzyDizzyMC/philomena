@@ -131,7 +131,6 @@ defmodule Philomena.Images.ElasticsearchIndex do
       hidden_from_users: image.hidden_from_users,
       anonymous: image.anonymous,
       description: image.description,
-      processed: image.processed,
       deletion_reason: image.deletion_reason,
       favourited_by_user_ids: image.favers |> Enum.map(& &1.id),
       hidden_by_user_ids: image.hiders |> Enum.map(& &1.id),
