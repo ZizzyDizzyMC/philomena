@@ -282,7 +282,8 @@ CREATE TABLE public.comments (
     deletion_reason character varying DEFAULT ''::character varying NOT NULL,
     destroyed_content boolean DEFAULT false,
     name_at_post_time character varying,
-    body character varying NOT NULL
+    body character varying NOT NULL,
+    approved boolean DEFAULT false
 );
 
 
@@ -981,7 +982,8 @@ CREATE TABLE public.images (
     hides_count integer DEFAULT 0 NOT NULL,
     image_duration double precision,
     description character varying DEFAULT ''::character varying NOT NULL,
-    scratchpad character varying
+    scratchpad character varying,
+    approved boolean DEFAULT false
 );
 
 
@@ -1015,7 +1017,8 @@ CREATE TABLE public.messages (
     updated_at timestamp without time zone NOT NULL,
     from_id integer NOT NULL,
     conversation_id integer NOT NULL,
-    body character varying NOT NULL
+    body character varying NOT NULL,
+    approved boolean DEFAULT false
 );
 
 
@@ -1268,7 +1271,8 @@ CREATE TABLE public.posts (
     deletion_reason character varying DEFAULT ''::character varying NOT NULL,
     destroyed_content boolean DEFAULT false NOT NULL,
     name_at_post_time character varying,
-    body character varying NOT NULL
+    body character varying NOT NULL,
+    approved boolean DEFAULT false
 );
 
 
@@ -1310,7 +1314,8 @@ CREATE TABLE public.reports (
     admin_id integer,
     reportable_id integer NOT NULL,
     reportable_type character varying NOT NULL,
-    reason character varying NOT NULL
+    reason character varying NOT NULL,
+    system boolean DEFAULT false
 );
 
 
@@ -2060,7 +2065,8 @@ CREATE TABLE public.users (
     description character varying,
     scratchpad character varying,
     bypass_rate_limits boolean DEFAULT false,
-    scale_large_images character varying(255) DEFAULT 'true'::character varying NOT NULL
+    scale_large_images character varying(255) DEFAULT 'true'::character varying NOT NULL,
+    verified boolean DEFAULT false
 );
 
 
@@ -2913,6 +2919,13 @@ CREATE UNIQUE INDEX image_tag_locks_image_id_tag_id_index ON public.image_tag_lo
 --
 
 CREATE INDEX image_tag_locks_tag_id_index ON public.image_tag_locks USING btree (tag_id);
+
+
+--
+-- Name: images_hidden_from_users_approved_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX images_hidden_from_users_approved_index ON public.images USING btree (hidden_from_users, approved) WHERE ((hidden_from_users = false) AND (approved = false));
 
 
 --
@@ -4113,6 +4126,13 @@ CREATE INDEX moderation_logs_user_id_index ON public.moderation_logs USING btree
 
 
 --
+-- Name: reports_system_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX reports_system_index ON public.reports USING btree (system) WHERE (system = true);
+
+
+--
 -- Name: user_tokens_context_token_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4995,3 +5015,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20210921025336);
 INSERT INTO public."schema_migrations" (version) VALUES (20210929181319);
 INSERT INTO public."schema_migrations" (version) VALUES (20211107130226);
 INSERT INTO public."schema_migrations" (version) VALUES (20211219194836);
+INSERT INTO public."schema_migrations" (version) VALUES (20220321173359);
