@@ -77,6 +77,15 @@ defmodule PhilomenaWeb.Router do
     ]
 
     resources "/registrations", RegistrationController, only: [:new, :create], singleton: true
+  end
+
+  scope "/", PhilomenaWeb do
+    pipe_through [
+      :browser,
+      :ensure_tor_authorized,
+      :redirect_if_user_is_authenticated
+    ]
+
     resources "/passwords", PasswordController, only: [:new, :create, :edit, :update]
     resources "/confirmations", ConfirmationController, only: [:new, :create, :show]
     resources "/unlocks", UnlockController, only: [:new, :create, :show]
@@ -318,6 +327,8 @@ defmodule PhilomenaWeb.Router do
       resources "/source_changes", FingerprintProfile.SourceChangeController, only: [:index]
     end
 
+    resources "/moderation_logs", ModerationLogController, only: [:index]
+
     scope "/admin", Admin, as: :admin do
       resources "/reports", ReportController, only: [:index, :show] do
         resources "/claim", Report.ClaimController, only: [:create, :delete], singleton: true
@@ -450,6 +461,7 @@ defmodule PhilomenaWeb.Router do
 
     scope "/autocomplete", Autocomplete, as: :autocomplete do
       resources "/tags", TagController, only: [:show], singleton: true
+      resources "/compiled", CompiledController, only: [:show], singleton: true
     end
 
     scope "/fetch", Fetch, as: :fetch do

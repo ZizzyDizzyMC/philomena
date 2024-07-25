@@ -9,6 +9,8 @@ background() {
     mix run -e 'Philomena.Release.update_channels()'
     mix run -e 'Philomena.Release.verify_artist_links()'
     mix run -e 'Philomena.Release.update_stats()'
+    mix run -e 'Philomena.Release.clean_moderation_logs()'
+    mix run -e 'Philomena.Release.generate_autocomplete()'
 
     sleep 300
   done
@@ -17,8 +19,7 @@ background() {
 # Always install assets
 (
 cd /srv/philomena/assets
-# workaround for #31
-npm install || (chown -R root:root node_modules && npm install)
+npm install
 )
 
 # Always install mix dependencies

@@ -4,11 +4,13 @@ on: [push, pull_request]
 
 jobs:
   build:
+    name: 'Build Elixir app'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/cache@v2
+      - name: Cache mix deps
+        uses: actions/cache@v2
         with:
           path: |
             _build
@@ -25,3 +27,31 @@ jobs:
         run: |
           docker-compose run app mix sobelow --config
           docker-compose run app mix deps.audit
+  lint-and-test:
+    name: 'JavaScript Linting and Unit Tests'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v2
+        with:
+          path: ./assets/node_modules
+          key: node_modules-${{ hashFiles('./assets/package-lock.json') }}
+
+      - name: Install npm dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
+        working-directory: ./assets
+
+      - run: npm run lint
+        working-directory: ./assets
+
+      - run: npm run test
+        working-directory: ./assets

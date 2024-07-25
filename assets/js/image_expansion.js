@@ -47,9 +47,8 @@ function selectVersion(imageWidth, imageHeight, imageSize, imageMime) {
   if (imageMime === 'video/webm' || imageMime === 'video/mp4' || imageSize <= 26214400) {
     return 'full';
   }
-  else {
-    return 'large';
-  }
+
+  return 'large';
 }
 
 /**

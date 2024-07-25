@@ -27,6 +27,15 @@ body {
   line-height: 1.15;
 }
 
+/* normalize.css breakage */
+sup, sub {
+  line-height: 1.15em;
+}
+
+sub {
+  bottom: -0.15em;
+}
+
 h1, h2, h3, h4, h5 {
   font-weight: normal;
   text-rendering: optimizeLegibility;
@@ -68,6 +77,11 @@ h6 {
   margin-bottom: var(--padding-small);
   margin-top: var(--padding-small);
   margin-left: 2px;
+  line-height: 1.35em;
+}
+
+.communication__body__text .paragraph {
+  margin-bottom: var(--padding-normal);
 }
 
 .paragraph img, .communication__body__text img, .block__content img {
@@ -225,8 +239,18 @@ hr {
 blockquote {
   margin: 1em 2em;
   border: 1px dotted $foreground_color;
-  padding: 1em;
+  padding: var(--padding-small);
   background-color: inherit;
+}
+
+blockquote .paragraph {
+  &:first-child {
+    margin-top: 0;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 // Prevent blockquote from gaining far too much indentation and breaking.
@@ -239,8 +263,29 @@ blockquote blockquote blockquote blockquote blockquote blockquote {
 @media (max-width: $min_px_width_for_desktop_layout) {
   blockquote {
     margin: 1em 4px;
-    padding: 1em 4px;
+    padding: var(--padding-small) 4px;
   }
+}
+
+.spoiler, .spoiler-revealed {
+  display: inline-block;
+  position: relative;
+}
+
+.spoiler::before, .spoiler-revealed::before {
+  content: ' ';
+  display: block;
+  position: absolute;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: $admin_links_hover_color;
+}
+
+.spoiler:hover::before, .spoiler-revealed::before {
+  display: none;
 }
 
 .spoiler {
@@ -279,27 +324,6 @@ blockquote blockquote blockquote blockquote blockquote blockquote {
   }
 }
 
-.spoiler, .spoiler-revealed {
-  .imgspoiler {
-    background-color: $admin_links_hover_color;
-    img {
-      visibility: hidden;
-    }
-  }
-
-  .imgspoiler:hover, .imgspoiler-revealed {
-    background-color: $admin_links_color;
-    img {
-      visibility: visible;
-    }
-  }
-
-  .imgspoiler, .imgspoiler-revealed {
-    display: inline-block;
-    max-width: 100%;
-  }
-}
-
 .literal {
   white-space: pre-wrap;
 }
@@ -308,25 +332,19 @@ blockquote blockquote blockquote blockquote blockquote blockquote {
   margin-bottom: 6px;
 }
 
-img[alt=tiny] {
-  max-height: $image_tiny_size !important;
-  max-width: $image_tiny_size !important;
+@mixin image-alt-size($name, $size) {
+  @media (min-width: $size) {
+    img[alt=#{$name}] {
+      max-height: $size !important;
+      max-width: $size !important;
+    }
+  }
 }
 
-img[alt=small] {
-  max-height: $image_small_size !important;
-  max-width: $image_small_size !important;
-}
-
-img[alt=medium] {
-  max-height: $image_medium_size !important;
-  max-width: $image_medium_size !important;
-}
-
-img[alt=large] {
-  max-height: $image_large_size !important;
-  max-width: $image_large_size !important;
-}
+@include image-alt-size(tiny, $image_tiny_size);
+@include image-alt-size(small, $image_small_size);
+@include image-alt-size(medium, $image_medium_size);
+@include image-alt-size(large, $image_large_size);
 
 table {
   @extend .table;
@@ -467,6 +485,7 @@ span.stat {
 @import "~views/profiles";
 @import "~views/pagination";
 @import "~views/search";
+@import "~views/staff";
 @import "~views/stats";
 @import "~views/tags";
 

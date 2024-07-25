@@ -49,6 +49,14 @@ function reset() {
 
 }
 
+function promptReset() {
+
+  if (window.confirm('Are you sure you want to abort batch tagging?')) {
+    reset();
+  }
+
+}
+
 function submit() {
 
   setTagButton(`Wait... (${currentTags()})`);
@@ -94,7 +102,7 @@ function clickHandler(event) {
 
   const targets = {
     '.js-quick-tag': activate,
-    '.js-quick-tag--abort': reset,
+    '.js-quick-tag--abort': promptReset,
     '.js-quick-tag--submit': submit,
     '.js-quick-tag--all': toggleAllImages,
     '.media-box': modifyImageQueue,

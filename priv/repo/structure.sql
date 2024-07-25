@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.4
--- Dumped by pg_dump version 13.4
+-- Dumped from database version 14.1
+-- Dumped by pg_dump version 14.1
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -114,6 +114,16 @@ CREATE SEQUENCE public.artist_links_id_seq
 --
 
 ALTER SEQUENCE public.artist_links_id_seq OWNED BY public.artist_links.id;
+
+
+--
+-- Name: autocomplete; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.autocomplete (
+    content bytea NOT NULL,
+    created_at timestamp(0) without time zone NOT NULL
+);
 
 
 --
@@ -1062,6 +1072,39 @@ CREATE SEQUENCE public.mod_notes_id_seq
 --
 
 ALTER SEQUENCE public.mod_notes_id_seq OWNED BY public.mod_notes.id;
+
+
+--
+-- Name: moderation_logs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.moderation_logs (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    body character varying NOT NULL,
+    subject_path character varying NOT NULL,
+    type character varying NOT NULL,
+    created_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: moderation_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.moderation_logs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: moderation_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.moderation_logs_id_seq OWNED BY public.moderation_logs.id;
 
 
 --
@@ -2255,6 +2298,13 @@ ALTER TABLE ONLY public.mod_notes ALTER COLUMN id SET DEFAULT nextval('public.mo
 
 
 --
+-- Name: moderation_logs id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.moderation_logs ALTER COLUMN id SET DEFAULT nextval('public.moderation_logs_id_seq'::regclass);
+
+
+--
 -- Name: notifications id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2619,6 +2669,14 @@ ALTER TABLE ONLY public.messages
 
 ALTER TABLE ONLY public.mod_notes
     ADD CONSTRAINT mod_notes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: moderation_logs moderation_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.moderation_logs
+    ADD CONSTRAINT moderation_logs_pkey PRIMARY KEY (id);
 
 
 --
@@ -4020,6 +4078,41 @@ CREATE INDEX intensities_index ON public.images USING btree (se_intensity, sw_in
 
 
 --
+-- Name: moderation_logs_created_at_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX moderation_logs_created_at_index ON public.moderation_logs USING btree (created_at);
+
+
+--
+-- Name: moderation_logs_type_created_at_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX moderation_logs_type_created_at_index ON public.moderation_logs USING btree (type, created_at);
+
+
+--
+-- Name: moderation_logs_type_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX moderation_logs_type_index ON public.moderation_logs USING btree (type);
+
+
+--
+-- Name: moderation_logs_user_id_created_at_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX moderation_logs_user_id_created_at_index ON public.moderation_logs USING btree (user_id, created_at);
+
+
+--
+-- Name: moderation_logs_user_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX moderation_logs_user_id_index ON public.moderation_logs USING btree (user_id);
+
+
+--
 -- Name: user_tokens_context_token_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4855,6 +4948,11 @@ ALTER TABLE ONLY public.image_tag_locks
 
 ALTER TABLE ONLY public.image_views
     ADD CONSTRAINT image_views FOREIGN KEY (image_id) REFERENCES public.images(id) ON UPDATE CASCADE ON DELETE CASCADE;
+-- Name: moderation_logs moderation_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.moderation_logs
+    ADD CONSTRAINT moderation_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -4895,3 +4993,5 @@ INSERT INTO public."schema_migrations" (version) VALUES (20210912171343);
 INSERT INTO public."schema_migrations" (version) VALUES (20210917190346);
 INSERT INTO public."schema_migrations" (version) VALUES (20210921025336);
 INSERT INTO public."schema_migrations" (version) VALUES (20210929181319);
+INSERT INTO public."schema_migrations" (version) VALUES (20211107130226);
+INSERT INTO public."schema_migrations" (version) VALUES (20211219194836);
