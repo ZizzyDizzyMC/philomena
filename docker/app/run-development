@@ -2,6 +2,8 @@
 
 . "$HOME/.cargo/env"
 
+echo "Working on it"
+
 # Create S3 dirs
 mkdir -p /srv/philomena/priv/static/system/images/thumbs
 mkdir -p /srv/philomena/priv/s3/philomena
