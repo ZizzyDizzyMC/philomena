@@ -17,7 +17,6 @@ config :philomena,
   elasticsearch_url: System.get_env("ELASTICSEARCH_URL", "http://localhost:9200"),
   advert_file_root: System.fetch_env!("ADVERT_FILE_ROOT"),
   avatar_file_root: System.fetch_env!("AVATAR_FILE_ROOT"),
-  channel_url_root: System.fetch_env!("CHANNEL_URL_ROOT"),
   badge_file_root: System.fetch_env!("BADGE_FILE_ROOT"),
   password_pepper: System.fetch_env!("PASSWORD_PEPPER"),
   avatar_url_root: System.fetch_env!("AVATAR_URL_ROOT"),
@@ -72,11 +71,47 @@ if is_nil(System.get_env("START_WORKER")) do
   config :exq, queues: []
 end
 
+# S3/Object store config
+config :philomena, :s3_primary_options,
+  region: System.get_env("S3_REGION", "us-east-1"),
+  scheme: System.fetch_env!("S3_SCHEME"),
+  host: System.fetch_env!("S3_HOST"),
+  port: System.fetch_env!("S3_PORT"),
+  access_key_id: System.fetch_env!("AWS_ACCESS_KEY_ID"),
+  secret_access_key: System.fetch_env!("AWS_SECRET_ACCESS_KEY"),
+  http_opts: [timeout: 180_000, recv_timeout: 180_000]
+
+config :philomena, :s3_primary_bucket, System.fetch_env!("S3_BUCKET")
+
+config :philomena, :s3_secondary_options,
+  region: System.get_env("ALT_S3_REGION", "us-east-1"),
+  scheme: System.get_env("ALT_S3_SCHEME"),
+  host: System.get_env("ALT_S3_HOST"),
+  port: System.get_env("ALT_S3_PORT"),
+  access_key_id: System.get_env("ALT_AWS_ACCESS_KEY_ID"),
+  secret_access_key: System.get_env("ALT_AWS_SECRET_ACCESS_KEY"),
+  http_opts: [timeout: 180_000, recv_timeout: 180_000]
+
+config :philomena, :s3_secondary_bucket, System.get_env("ALT_S3_BUCKET")
+
+config :ex_aws, :hackney_opts,
+  timeout: 180_000,
+  recv_timeout: 180_000,
+  use_default_pool: false,
+  pool: false
+
+config :ex_aws, :retries,
+  max_attempts: 20,
+  base_backoff_in_ms: 10,
+  max_backoff_in_ms: 10_000
+
 if config_env() != :test do
   # Database config
   config :philomena, Philomena.Repo,
     url: System.fetch_env!("DATABASE_URL"),
-    pool_size: String.to_integer(System.get_env("POOL_SIZE", "16"))
+    pool_size: String.to_integer(System.get_env("POOL_SIZE", "16")),
+    timeout: 60_000,
+    ownership_timeout: 60_000
 end
 
 if config_env() == :prod do
@@ -92,8 +127,10 @@ if config_env() == :prod do
     auth: :always
 
   # Production endpoint config
+  {:ok, ip} = :inet.parse_address(System.get_env("APP_IP", "127.0.0.1") |> String.to_charlist())
+
   config :philomena, PhilomenaWeb.Endpoint,
-    http: [ip: {127, 0, 0, 1}, port: {:system, "PORT"}],
+    http: [ip: ip, port: {:system, "PORT"}],
     url: [host: System.fetch_env!("APP_HOSTNAME"), scheme: "https", port: 443],
     secret_key_base: System.fetch_env!("SECRET_KEY_BASE"),
     server: not is_nil(System.get_env("START_ENDPOINT"))

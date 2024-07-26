@@ -15,8 +15,8 @@ const tokenList = [
         ['not_op', /^\s*NOT(?:\s+|(?=\())/],
         ['not_op', /^\s*[!-]\s*/],
         ['space', /^\s+/],
-        ['word', /^(?:[^\s,()^~]|\\[\s,()^~])+/],
-        ['word', /^(?:[^\s,()]|\\[\s,()])+/]
+        ['word', /^(?:\\[\s,()^~]|[^\s,()^~])+/],
+        ['word', /^(?:\\[\s,()]|[^\s,()])+/]
       ],
       numberFields = ['id', 'width', 'height', 'aspect_ratio',
         'comment_count', 'score', 'upvotes', 'downvotes',
@@ -873,8 +873,5 @@ SearchAST.prototype.dumpTree = function() {
 
   return retStrArr.join('\n');
 };
-
-// Force module handling for Jest, can be removed after TypeScript migration
-export {};
 
 export default parseSearch;

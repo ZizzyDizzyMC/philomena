@@ -80,24 +80,27 @@ defmodule PhilomenaWeb.MarkdownRenderer do
             case group do
               [_id, "p"] when not img.hidden_from_users and img.approved ->
                 Phoenix.View.render(@image_view, "_image_target.html",
+                  embed_display: true,
                   image: img,
-                  size: :medium,
+                  size: @image_view.select_version(img, :medium),
                   conn: conn
                 )
                 |> safe_to_string()
 
               [_id, "t"] when not img.hidden_from_users and img.approved ->
                 Phoenix.View.render(@image_view, "_image_target.html",
+                  embed_display: true,
                   image: img,
-                  size: :small,
+                  size: @image_view.select_version(img, :small),
                   conn: conn
                 )
                 |> safe_to_string()
 
               [_id, "s"] when not img.hidden_from_users and img.approved ->
                 Phoenix.View.render(@image_view, "_image_target.html",
+                  embed_display: true,
                   image: img,
-                  size: :thumb_small,
+                  size: @image_view.select_version(img, :thumb_small),
                   conn: conn
                 )
                 |> safe_to_string()

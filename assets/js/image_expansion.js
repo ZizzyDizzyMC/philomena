@@ -1,4 +1,4 @@
-import { clearEl } from './utils/dom';
+import { $$, clearEl } from './utils/dom';
 import store from './utils/store';
 
 const imageVersions = {
@@ -158,20 +158,20 @@ function bindImageForClick(target) {
   });
 }
 
-function bindImageTarget() {
-  const target = document.getElementById('image_target');
-  if (!target) return;
 
-  pickAndResize(target);
-
-  if (target.dataset.mimeType === 'video/webm' || target.dataset.mimeType === 'video/mp4') {
-    // Don't interfere with media controls on video
-    return;
-  }
-
-  bindImageForClick(target);
-  window.addEventListener('resize', () => {
+function bindImageTarget(node = document) {
+  $$('.image-target', node).forEach(target => {
     pickAndResize(target);
+
+    if (target.dataset.mimeType === 'video/webm' || target.dataset.mimeType === 'video/mp4') {
+      // Don't interfere with media controls on video
+      return;
+    }
+
+    bindImageForClick(target);
+    window.addEventListener('resize', () => {
+      pickAndResize(target);
+    });
   });
 }
 
