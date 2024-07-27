@@ -2656,14 +2656,6 @@ ALTER TABLE ONLY public.image_intensities
 
 
 --
--- Name: image_sources image_sources_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.image_sources
-    ADD CONSTRAINT image_sources_pkey PRIMARY KEY (id);
-
-
---
 -- Name: image_views image_views_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
