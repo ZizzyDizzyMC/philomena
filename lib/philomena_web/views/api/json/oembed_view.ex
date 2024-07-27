@@ -11,8 +11,8 @@ defmodule PhilomenaWeb.Api.Json.OembedView do
     %{
       version: "1.0",
       type: "photo",
-      title: "##{image.id} - #{image.tag_list_cache} - #{booru_name()}",
-      author_url: image.source_url || "",
+      title: "##{image.id} - #{tag_list(image)} - #{booru_name()}",
+      author_url: image_first_source(image),
       author_name: artist_tags(image.tags),
       provider_name: "#{booru_name()}",
       provider_url: PhilomenaWeb.Endpoint.url(),
