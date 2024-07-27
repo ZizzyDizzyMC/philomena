@@ -4,10 +4,11 @@ defmodule Philomena.Users.User do
 
   use Ecto.Schema
   import Ecto.Changeset
+  import PhilomenaQuery.Ecto.QueryValidator
 
   alias Philomena.Schema.TagList
-  alias Philomena.Schema.Search
 
+  alias Philomena.Images.Query
   alias Philomena.Filters.Filter
   alias Philomena.ArtistLinks.ArtistLink
   alias Philomena.Badges
@@ -215,8 +216,7 @@ defmodule Philomena.Users.User do
   Confirms the account by setting `confirmed_at`.
   """
   def confirm_changeset(user) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-    change(user, confirmed_at: now)
+    change(user, confirmed_at: DateTime.utc_now(:second))
   end
 
   @doc """
@@ -259,9 +259,7 @@ defmodule Philomena.Users.User do
   end
 
   def lock_changeset(user) do
-    locked_at = DateTime.utc_now() |> DateTime.truncate(:second)
-
-    change(user, locked_at: locked_at)
+    change(user, locked_at: DateTime.utc_now(:second))
   end
 
   def unlock_changeset(user) do
@@ -360,8 +358,8 @@ defmodule Philomena.Users.User do
     |> validate_inclusion(:images_per_page, 15..500)
     |> validate_inclusion(:comments_per_page, 15..100)
 	|> validate_inclusion(:scale_large_images, ["false", "partscaled", "true"])
-    |> Search.validate_search(:watched_images_query_str, user, true)
-    |> Search.validate_search(:watched_images_exclude_str, user, true)
+    |> validate_query(:watched_images_query_str, &Query.compile(&1, user: user, watch: true))
+    |> validate_query(:watched_images_exclude_str, &Query.compile(&1, user: user, watch: true))
   end
 
   def description_changeset(user, attrs) do
@@ -381,14 +379,12 @@ defmodule Philomena.Users.User do
   end
 
   def name_changeset(user, attrs) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-
     user
     |> cast(attrs, [:name])
     |> validate_name()
     |> put_slug()
     |> unique_constraints()
-    |> put_change(:last_renamed_at, now)
+    |> put_change(:last_renamed_at, DateTime.utc_now(:second))
   end
 
   def avatar_changeset(user, attrs) do
@@ -431,7 +427,7 @@ defmodule Philomena.Users.User do
   end
 
   def deactivate_changeset(user, moderator) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    now = DateTime.utc_now(:second)
 
     change(user, deleted_at: now, deleted_by_user_id: moderator.id)
   end
@@ -538,7 +534,6 @@ defmodule Philomena.Users.User do
     "data:image/png;base64," <> png
   end
 
-  @spec totp_secret(%Philomena.Users.User{}) :: binary()
   def totp_secret(user) do
     Philomena.Users.Encryptor.decrypt_model(
       user.encrypted_otp_secret,

@@ -1,7 +1,7 @@
 defmodule PhilomenaWeb.Api.Json.Search.PostController do
   use PhilomenaWeb, :controller
 
-  alias Philomena.Elasticsearch
+  alias PhilomenaQuery.Search
   alias Philomena.Posts.Post
   alias Philomena.Posts.Query
   import Ecto.Query
@@ -9,11 +9,11 @@ defmodule PhilomenaWeb.Api.Json.Search.PostController do
   def index(conn, params) do
     user = conn.assigns.current_user
 
-    case Query.compile(user, params["q"] || "") do
+    case Query.compile(params["q"], user: user) do
       {:ok, query} ->
         posts =
           Post
-          |> Elasticsearch.search_definition(
+          |> Search.search_definition(
             %{
               query: %{
                 bool: %{
@@ -28,7 +28,7 @@ defmodule PhilomenaWeb.Api.Json.Search.PostController do
             },
             conn.assigns.pagination
           )
-          |> Elasticsearch.search_records(preload(Post, [:user, :topic]))
+          |> Search.search_records(preload(Post, [:user, :topic]))
 
         conn
         |> put_view(PhilomenaWeb.Api.Json.Forum.Topic.PostView)

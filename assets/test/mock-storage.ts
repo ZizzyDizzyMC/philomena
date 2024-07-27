@@ -1,9 +1,13 @@
+import { MockInstance } from 'vitest';
+
 type MockStorageKeys = 'getItem' | 'setItem' | 'removeItem';
 
-export function mockStorage<Keys extends MockStorageKeys>(options: Pick<Storage, Keys>): { [k in `${Keys}Spy`]: jest.SpyInstance } {
-  const getItemSpy = 'getItem' in options ? jest.spyOn(Storage.prototype, 'getItem') : undefined;
-  const setItemSpy = 'setItem' in options ? jest.spyOn(Storage.prototype, 'setItem') : undefined;
-  const removeItemSpy = 'removeItem' in options ? jest.spyOn(Storage.prototype, 'removeItem') : undefined;
+export function mockStorage<Keys extends MockStorageKeys>(
+  options: Pick<Storage, Keys>,
+): { [k in `${Keys}Spy`]: MockInstance } {
+  const getItemSpy = 'getItem' in options ? vi.spyOn(Storage.prototype, 'getItem') : undefined;
+  const setItemSpy = 'setItem' in options ? vi.spyOn(Storage.prototype, 'setItem') : undefined;
+  const removeItemSpy = 'removeItem' in options ? vi.spyOn(Storage.prototype, 'removeItem') : undefined;
 
   beforeAll(() => {
     getItemSpy && getItemSpy.mockImplementation((options as Storage).getItem);
@@ -26,23 +30,23 @@ export function mockStorage<Keys extends MockStorageKeys>(options: Pick<Storage,
   return { getItemSpy, setItemSpy, removeItemSpy } as ReturnType<typeof mockStorage>;
 }
 
-type MockStorageImplApi = { [k in `${MockStorageKeys}Spy`]: jest.SpyInstance } & {
+type MockStorageImplApi = { [k in `${MockStorageKeys}Spy`]: MockInstance } & {
   /**
    * Forces the mock storage back to its default (empty) state
    * @param value
    */
-  clearStorage: VoidFunction,
+  clearStorage: VoidFunction;
   /**
    * Forces the mock storage to be in the specific state provided as the parameter
    * @param value
    */
-  setStorageValue: (value: Record<string, string>) => void,
+  setStorageValue: (value: Record<string, string>) => void;
   /**
    * Forces the mock storage to throw an error for the duration of the provided function's execution,
    * or in case a promise is returned by the function, until that promise is resolved.
    */
-  forceStorageError: <Args, Return>(func: (...args: Args[]) => Return | Promise<Return>) => void
-}
+  forceStorageError: <Args, Return>(func: (...args: Args[]) => Return | Promise<Return>) => void;
+};
 
 export function mockStorageImpl(): MockStorageImplApi {
   let shouldThrow = false;

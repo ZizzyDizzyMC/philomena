@@ -2,7 +2,7 @@ defmodule PhilomenaWeb.FilterController do
   use PhilomenaWeb, :controller
 
   alias Philomena.{Filters, Filters.Filter, Filters.Query, Tags.Tag}
-  alias Philomena.Elasticsearch
+  alias PhilomenaQuery.Search
   alias Philomena.Schema.TagList
   alias Philomena.Repo
   import Ecto.Query
@@ -13,8 +13,8 @@ defmodule PhilomenaWeb.FilterController do
   def index(conn, %{"fq" => fq}) do
     user = conn.assigns.current_user
 
-    user
-    |> Query.compile(fq)
+    fq
+    |> Query.compile(user: user)
     |> render_index(conn, user)
   end
 
@@ -47,7 +47,7 @@ defmodule PhilomenaWeb.FilterController do
   defp render_index({:ok, query}, conn, user) do
     filters =
       Filter
-      |> Elasticsearch.search_definition(
+      |> Search.search_definition(
         %{
           query: %{
             bool: %{
@@ -61,7 +61,7 @@ defmodule PhilomenaWeb.FilterController do
         },
         conn.assigns.pagination
       )
-      |> Elasticsearch.search_records(preload(Filter, [:user]))
+      |> Search.search_records(preload(Filter, [:user]))
 
     render(conn, "index.html", title: "Filters", filters: filters)
   end
@@ -146,7 +146,7 @@ defmodule PhilomenaWeb.FilterController do
       {:ok, filter} ->
         conn
         |> put_flash(:info, "Filter created successfully.")
-        |> redirect(to: Routes.filter_path(conn, :show, filter))
+        |> redirect(to: ~p"/filters/#{filter}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)
@@ -171,7 +171,7 @@ defmodule PhilomenaWeb.FilterController do
       {:ok, filter} ->
         conn
         |> put_flash(:info, "Filter updated successfully.")
-        |> redirect(to: Routes.filter_path(conn, :show, filter))
+        |> redirect(to: ~p"/filters/#{filter}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "edit.html", filter: filter, changeset: changeset)
@@ -185,12 +185,12 @@ defmodule PhilomenaWeb.FilterController do
       {:ok, _filter} ->
         conn
         |> put_flash(:info, "Filter deleted successfully.")
-        |> redirect(to: Routes.filter_path(conn, :index))
+        |> redirect(to: ~p"/filters")
 
       _error ->
         conn
         |> put_flash(:error, "Filter is still in use, not deleted.")
-        |> redirect(to: Routes.filter_path(conn, :show, filter))
+        |> redirect(to: ~p"/filters/#{filter}")
     end
   end
 end

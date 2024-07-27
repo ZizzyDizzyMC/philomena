@@ -1,6 +1,6 @@
 defmodule PhilomenaWeb.StatsUpdater do
   alias Philomena.Config
-  alias Philomena.Elasticsearch
+  alias PhilomenaQuery.Search
   alias Philomena.Images.Image
   alias Philomena.Comments.Comment
   alias Philomena.Topics.Topic
@@ -45,13 +45,15 @@ defmodule PhilomenaWeb.StatsUpdater do
         distinct_creators: distinct_creators,
         images_in_galleries: images_in_galleries
       )
+      |> Phoenix.HTML.Safe.to_iodata()
+      |> IO.iodata_to_binary()
 
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    now = DateTime.utc_now(:second)
 
     static_page = %{
       title: "Statistics",
       slug: "stats",
-      body: Phoenix.HTML.safe_to_string(result),
+      body: result,
       created_at: now,
       updated_at: now
     }
@@ -66,8 +68,8 @@ defmodule PhilomenaWeb.StatsUpdater do
     data = Config.get(:aggregation)
 
     {
-      Elasticsearch.search(Image, data["images"]),
-      Elasticsearch.search(Comment, data["comments"])
+      Search.search(Image, data["images"]),
+      Search.search(Comment, data["comments"])
     }
   end
 

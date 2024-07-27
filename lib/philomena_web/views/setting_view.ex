@@ -1,68 +1,20 @@
 defmodule PhilomenaWeb.SettingView do
   use PhilomenaWeb, :view
 
-  def theme_options(conn) do
-    [
-      [
-        key: "#{booru_name()} Default",
-        value: "default",
-        data: [theme_path: Routes.static_path(conn, "/css/#{booru_style()}.css")]
-      ],
-      [
-        key: "Philomena Dark",
-        value: "dark",
-        data: [theme_path: Routes.static_path(conn, "/css/dark.css")]
-      ],
-      [
-        key: "Philomena Red",
-        value: "red",
-        data: [theme_path: Routes.static_path(conn, "/css/red.css")]
-      ],
-      [
-        key: "Philomena Light",
-        value: "olddefault",
-        data: [theme_path: Routes.static_path(conn, "/css/olddefault.css")]
-      ],
-      [
-        key: "Ponerpics Default",
-        value: "ponerpics-default",
-        data: [theme_path: Routes.static_path(conn, "/css/ponerpics-default.css")]
-      ],
-      [
-        key: "Manebooru Fuchsia",
-        value: "manebooru-fuchsia",
-        data: [theme_path: Routes.static_path(conn, "/css/manebooru-fuchsia.css")]
-      ],
-      [
-        key: "Manebooru Green",
-        value: "manebooru-green",
-        data: [theme_path: Routes.static_path(conn, "/css/manebooru-green.css")]
-      ],
-      [
-        key: "Manebooru Orange",
-        value: "manebooru-orange",
-        data: [theme_path: Routes.static_path(conn, "/css/manebooru-orange.css")]
-      ],
-      [
-        key: "Twibooru Default",
-        value: "twibooru-default",
-        data: [theme_path: Routes.static_path(conn, "/css/twibooru-default.css")]
-      ],
-      [
-        key: "Furbooru Default",
-        value: "furbooru-default",
-        data: [theme_path: Routes.static_path(conn, "/css/furbooru-default.css")]
-      ],
-      [
-        key: "Bronyhub Default",
-        value: "bronyhub-default",
-        data: [theme_path: Routes.static_path(conn, "/css/bronyhub-default.css")]
-      ],
-	  [
-        key: "Ponybooru Default",
-        value: "ponybooru-default",
-        data: [theme_path: Routes.static_path(conn, "/css/ponybooru-default.css")]
-      ]
+  def theme_options do
+    [  
+      [key: "#{booru_name()} Default", value: "default", data: [theme_path: ~p"/css/#{booru_style()}.css"]],
+      [key: "Dark", value: "dark", data: [theme_path: ~p"/css/dark.css"]],
+      [key: "Red", value: "red", data: [theme_path: ~p"/css/red.css"]],
+      [key: "Philomena Light", value: "olddefault", data: [theme_path: ~p"/css/olddefault.css"]],
+      [key: "Ponerpics Default", value: "ponerpics-default", data: [theme_path: ~p"/css/ponerpics-default.css"]],
+      [key: "Manebooru Fuchsia", value: "manebooru-fuchsia", data: [theme_path: ~p"/css/manebooru-fuchsia.css"]],
+      [key: "Manebooru Green", value: "manebooru-green", data: [theme_path: ~p"/css/manebooru-green.css"]],
+      [key: "Manebooru Orange", value: "manebooru-orange", data: [theme_path: ~p"/css/manebooru-orange.css"]],
+      [key: "Twibooru Default", value: "twibooru-default", data: [theme_path: ~p"/css/twibooru-default.css"]],
+      [key: "Furbooru Default", value: "furbooru-default", data: [theme_path: ~p"/css/furbooru-default.css"]],
+      [key: "Bronyhub Default", value: "bronyhub-default", data: [theme_path: ~p"/css/bronyhub-default.css"]],
+      [key: "Ponybooru Default", value: "ponybooru-default", data: [theme_path: ~p"/css/ponybooru-default.css"]]
     ]
   end
 

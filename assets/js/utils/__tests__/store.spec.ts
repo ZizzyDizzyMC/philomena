@@ -60,9 +60,11 @@ describe('Store utilities', () => {
         },
       };
       const initialValueKeys = Object.keys(initialValues) as (keyof typeof initialValues)[];
-      setStorageValue(initialValueKeys.reduce((acc, key) => {
-        return { ...acc, [key]: JSON.stringify(initialValues[key]) };
-      }, {}));
+      setStorageValue(
+        initialValueKeys.reduce((acc, key) => {
+          return { ...acc, [key]: JSON.stringify(initialValues[key]) };
+        }, {}),
+      );
 
       initialValueKeys.forEach((key, i) => {
         const result = store.get(key);
@@ -117,11 +119,11 @@ describe('Store utilities', () => {
     it('should attach a storage event listener and fire when the provide key changes', () => {
       const mockKey = `mock-watch-key-${getRandomIntBetween(1, 10)}`;
       const mockValue = Math.random();
-      const mockCallback = jest.fn();
+      const mockCallback = vi.fn();
       setStorageValue({
         [mockKey]: JSON.stringify(mockValue),
       });
-      const addEventListenerSpy = jest.spyOn(window, 'addEventListener');
+      const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
 
       const cleanup = store.watch(mockKey, mockCallback);
 
@@ -166,7 +168,11 @@ describe('Store utilities', () => {
 
       expect(setItemSpy).toHaveBeenCalledTimes(2);
       expect(setItemSpy).toHaveBeenNthCalledWith(1, mockKey, JSON.stringify(mockValue));
-      expect(setItemSpy).toHaveBeenNthCalledWith(2, mockKey + lastUpdatedSuffix, JSON.stringify(initialDateNow + mockMaxAge));
+      expect(setItemSpy).toHaveBeenNthCalledWith(
+        2,
+        mockKey + lastUpdatedSuffix,
+        JSON.stringify(initialDateNow + mockMaxAge),
+      );
     });
   });
 

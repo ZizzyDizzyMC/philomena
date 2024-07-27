@@ -4,7 +4,7 @@ defmodule PhilomenaWeb.Image.NavigateController do
   alias PhilomenaWeb.ImageLoader
   alias PhilomenaWeb.ImageNavigator
   alias PhilomenaWeb.ImageScope
-  alias Philomena.Elasticsearch
+  alias PhilomenaQuery.Search
   alias Philomena.Images.Image
   alias Philomena.Images.Query
 
@@ -21,11 +21,11 @@ defmodule PhilomenaWeb.Image.NavigateController do
     |> case do
       {next_image, hit} ->
         redirect(conn,
-          to: Routes.image_path(conn, :show, next_image, Keyword.put(scope, :sort, hit["sort"]))
+          to: ~p"/images/#{next_image}?#{Keyword.put(scope, :sort, hit["sort"])}"
         )
 
       nil ->
-        redirect(conn, to: Routes.image_path(conn, :show, image, scope))
+        redirect(conn, to: ~p"/images/#{image}?#{scope}")
     end
   end
 
@@ -37,11 +37,11 @@ defmodule PhilomenaWeb.Image.NavigateController do
     body = %{range: %{id: %{gt: conn.assigns.image.id}}}
 
     {images, _tags} = ImageLoader.query(conn, body, pagination: pagination)
-    images = Elasticsearch.search_records(images, Image)
+    images = Search.search_records(images, Image)
 
     page_num = page_for_offset(pagination.page_size, images.total_entries)
 
-    redirect(conn, to: Routes.search_path(conn, :index, q: "*", page: page_num))
+    redirect(conn, to: ~p"/search?#{[q: "*", page: page_num]}")
   end
 
   defp page_for_offset(per_page, offset) do
@@ -54,7 +54,10 @@ defmodule PhilomenaWeb.Image.NavigateController do
   defp compile_query(conn) do
     user = conn.assigns.current_user
 
-    {:ok, query} = Query.compile(user, match_all_if_blank(conn.params["q"]))
+    {:ok, query} =
+      conn.params["q"]
+      |> match_all_if_blank()
+      |> Query.compile(user: user)
 
     query
   end

@@ -1,6 +1,7 @@
 defmodule PhilomenaWeb.LayoutView do
   use PhilomenaWeb, :view
 
+  import PhilomenaWeb.Config
   alias PhilomenaWeb.ImageView
   alias Philomena.Config
   alias Plug.Conn
@@ -22,6 +23,10 @@ defmodule PhilomenaWeb.LayoutView do
     Application.get_env(:philomena, :cdn_host)
   end
 
+  def vite_reload? do
+    Application.get_env(:philomena, :vite_reload)
+  end
+
   defp ignored_tag_list(nil), do: []
   defp ignored_tag_list([]), do: []
   defp ignored_tag_list([{tag, _body, _dnp_entries}]), do: [tag.id]
@@ -38,9 +43,9 @@ defmodule PhilomenaWeb.LayoutView do
     data = [
       filter_id: filter.id,
       hidden_tag_list: Jason.encode!(filter.hidden_tag_ids),
-      hidden_filter: Philomena.Search.String.normalize(filter.hidden_complex_str || ""),
+      hidden_filter: PhilomenaQuery.Parse.String.normalize(filter.hidden_complex_str || ""),
       spoilered_tag_list: Jason.encode!(filter.spoilered_tag_ids),
-      spoilered_filter: Philomena.Search.String.normalize(filter.spoilered_complex_str || ""),
+      spoilered_filter: PhilomenaQuery.Parse.String.normalize(filter.spoilered_complex_str || ""),
       user_id: if(user, do: user.id, else: nil),
       user_name: if(user, do: user.name, else: nil),
       user_slug: if(user, do: user.slug, else: nil),
@@ -64,44 +69,19 @@ defmodule PhilomenaWeb.LayoutView do
     Config.get(:footer)
   end
 
-  def stylesheet_path(conn, %{theme: "dark"}),
-    do: Routes.static_path(conn, "/css/dark.css")
-
-  def stylesheet_path(conn, %{theme: "red"}),
-    do: Routes.static_path(conn, "/css/red.css")
-
-  def stylesheet_path(conn, %{theme: "olddefault"}),
-    do: Routes.static_path(conn, "/css/olddefault.css")
-
-  def stylesheet_path(conn, %{theme: "ponerpics-default"}),
-    do: Routes.static_path(conn, "/css/ponerpics-default.css")
-
-  def stylesheet_path(conn, %{theme: "manebooru-fuchsia"}),
-    do: Routes.static_path(conn, "/css/manebooru-fuchsia.css")
-
-  def stylesheet_path(conn, %{theme: "manebooru-green"}),
-    do: Routes.static_path(conn, "/css/manebooru-green.css")
-
-  def stylesheet_path(conn, %{theme: "manebooru-orange"}),
-    do: Routes.static_path(conn, "/css/manebooru-orange.css")
-
-  def stylesheet_path(conn, %{theme: "twibooru-default"}),
-    do: Routes.static_path(conn, "/css/twibooru-default.css")
-
-  def stylesheet_path(conn, %{theme: "furbooru-default"}),
-    do: Routes.static_path(conn, "/css/furbooru-default.css")
-
-  def stylesheet_path(conn, %{theme: "bronyhub-default"}),
-    do: Routes.static_path(conn, "/css/bronyhub-default.css")
-
-  def stylesheet_path(conn, %{theme: "ponybooru-default"}),
-    do: Routes.static_path(conn, "/css/ponybooru-default.css")
-
-  def stylesheet_path(conn, _user),
-    do: Routes.static_path(conn, "/css/#{booru_style()}.css")
-
-  def dark_stylesheet_path(conn),
-    do: Routes.static_path(conn, "/css/#{booru_dark_style()}.css")
+  def stylesheet_path(%{theme: "dark"}), do: ~p"/css/dark.css"
+  def stylesheet_path(%{theme: "red"}), do: ~p"/css/red.css"
+  def stylesheet_path(%{theme: "olddefault"}), do: ~p"/css/olddefault.css"
+  def stylesheet_path(%{theme: "ponerpics-default"}), do: ~p"/css/ponerpics-default.css"
+  def stylesheet_path(%{theme: "manebooru-fuchsia"}), do: ~p"/css/manebooru-fuchsia.css"
+  def stylesheet_path(%{theme: "manebooru-green"}), do: ~p"/css/manebooru-green.css"
+  def stylesheet_path(%{theme: "manebooru-orange"}), do: ~p"/css/manebooru-orange.css"
+  def stylesheet_path(%{theme: "twibooru-default"}), do: ~p"/css/twibooru-default.css"
+  def stylesheet_path(%{theme: "furbooru-default"}), do: ~p"/css/furbooru-default.css"
+  def stylesheet_path(%{theme: "bronyhub-default"}), do: ~p"/css/bronyhub-default.css"
+  def stylesheet_path(%{theme: "ponybooru-default"}), do: ~p"/css/ponybooru-default.css"
+  def stylesheet_path(_user), do: ~p"/css/#{booru_style()}.css"
+  def dark_stylesheet_path, do: ~p"/css/#{booru_dark_style()}.css"
 
   def theme_name(%{theme: theme}), do: theme
   def theme_name(_user), do: "default"

@@ -20,11 +20,11 @@ export RUSTFLAGS="-C target-feature=-crt-static"
 
 background() {
   while :; do
-    mix run -e 'Philomena.Release.update_channels()'
-    mix run -e 'Philomena.Release.verify_artist_links()'
-    mix run -e 'Philomena.Release.update_stats()'
-    mix run -e 'Philomena.Release.clean_moderation_logs()'
-    mix run -e 'Philomena.Release.generate_autocomplete()'
+    mix run -e 'Philomena.Release.update_channels()' > /dev/null
+    mix run -e 'Philomena.Release.verify_artist_links()' > /dev/null
+    mix run -e 'Philomena.Release.update_stats()' > /dev/null
+    mix run -e 'Philomena.Release.clean_moderation_logs()' > /dev/null
+    mix run -e 'Philomena.Release.generate_autocomplete()' > /dev/null
 
     sleep 300
   done
@@ -39,11 +39,11 @@ npm install
 # Always install mix dependencies
 (cd /srv/philomena && mix deps.get)
 
-# Sleep to allow Elasticsearch to finish initializing
+# Sleep to allow OpenSearch to finish initializing
 # if it's not done doing whatever it does yet
-echo -n "Waiting for Elasticsearch"
+echo -n "Waiting for OpenSearch"
 
-until wget -qO - elasticsearch:9200; do
+until wget --no-check-certificate -qO - http://opensearch:9200; do
   echo -n "."
   sleep 2
 done

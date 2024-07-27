@@ -7,20 +7,18 @@ defmodule Philomena.Posts do
   alias Ecto.Multi
   alias Philomena.Repo
 
-  alias Philomena.Elasticsearch
+  alias PhilomenaQuery.Search
   alias Philomena.Topics.Topic
   alias Philomena.Topics
   alias Philomena.UserStatistics
   alias Philomena.Posts.Post
-  alias Philomena.Posts.ElasticsearchIndex, as: PostIndex
+  alias Philomena.Posts.SearchIndex, as: PostIndex
   alias Philomena.IndexWorker
   alias Philomena.Forums.Forum
   alias Philomena.Notifications
   alias Philomena.NotificationWorker
   alias Philomena.Versions
   alias Philomena.Reports
-  alias Philomena.Reports.Report
-  alias Philomena.Users.User
 
   @doc """
   Gets a single post.
@@ -51,7 +49,7 @@ defmodule Philomena.Posts do
 
   """
   def create_post(topic, attributes, params \\ %{}) do
-    now = DateTime.utc_now()
+    now = DateTime.utc_now(:second)
 
     topic_query =
       Topic
@@ -66,7 +64,7 @@ defmodule Philomena.Posts do
       |> where(id: ^topic.forum_id)
 
     Multi.new()
-    |> Multi.all(:topic_lock, topic_lock_query)
+    |> Multi.one(:topic, topic_lock_query)
     |> Multi.run(:post, fn repo, _ ->
       last_position =
         Post
@@ -95,7 +93,7 @@ defmodule Philomena.Posts do
 
       {:ok, count}
     end)
-    |> maybe_create_subscription_on_reply(topic, attributes[:user])
+    |> Topics.maybe_subscribe_on(:topic, attributes[:user], :watch_on_reply)
     |> Repo.transaction()
     |> case do
       {:ok, %{post: post}} = result ->
@@ -108,17 +106,6 @@ defmodule Philomena.Posts do
     end
   end
 
-  defp maybe_create_subscription_on_reply(multi, topic, %User{watch_on_reply: true} = user) do
-    multi
-    |> Multi.run(:subscribe, fn _repo, _changes ->
-      Topics.create_subscription(topic, user)
-    end)
-  end
-
-  defp maybe_create_subscription_on_reply(multi, _topic, _user) do
-    multi
-  end
-
   def notify_post(post) do
     Exq.enqueue(Exq, "notifications", NotificationWorker, ["Posts", post.id])
   end
@@ -127,8 +114,7 @@ defmodule Philomena.Posts do
 
   def report_non_approved(post) do
     Reports.create_system_report(
-      post.id,
-      "Post",
+      {"Post", post.id},
       "Approval",
       "Post contains externally-embedded images and has been flagged for review."
     )
@@ -173,7 +159,7 @@ defmodule Philomena.Posts do
 
   """
   def update_post(%Post{} = post, editor, attrs) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    now = DateTime.utc_now(:second)
     current_body = post.body
     current_reason = post.edit_reason
 
@@ -216,11 +202,7 @@ defmodule Philomena.Posts do
   end
 
   def hide_post(%Post{} = post, attrs, user) do
-    reports =
-      Report
-      |> where(reportable_type: "Post", reportable_id: ^post.id)
-      |> select([r], r.id)
-      |> update(set: [open: false, state: "closed", admin_id: ^user.id])
+    report_query = Reports.close_report_query({"Post", post.id}, user)
 
     topics =
       Topic
@@ -236,7 +218,7 @@ defmodule Philomena.Posts do
 
     Multi.new()
     |> Multi.update(:post, post)
-    |> Multi.update_all(:reports, reports, [])
+    |> Multi.update_all(:reports, report_query, [])
     |> Multi.update_all(:topics, topics, [])
     |> Multi.update_all(:forums, forums, [])
     |> Repo.transaction()
@@ -267,17 +249,12 @@ defmodule Philomena.Posts do
   end
 
   def approve_post(%Post{} = post, user) do
-    reports =
-      Report
-      |> where(reportable_type: "Post", reportable_id: ^post.id)
-      |> select([r], r.id)
-      |> update(set: [open: false, state: "closed", admin_id: ^user.id])
-
+    report_query = Reports.close_report_query({"Post", post.id}, user)
     post = Post.approve_changeset(post)
 
     Multi.new()
     |> Multi.update(:post, post)
-    |> Multi.update_all(:reports, reports, [])
+    |> Multi.update_all(:reports, report_query, [])
     |> Repo.transaction()
     |> case do
       {:ok, %{post: post, reports: {_count, reports}}} ->
@@ -309,7 +286,7 @@ defmodule Philomena.Posts do
   def user_name_reindex(old_name, new_name) do
     data = PostIndex.user_name_update_by_query(old_name, new_name)
 
-    Elasticsearch.update_by_query(Post, data.query, data.set_replacements, data.replacements)
+    Search.update_by_query(Post, data.query, data.set_replacements, data.replacements)
   end
 
   defp reindex_after_update({:ok, post}) do
@@ -336,6 +313,6 @@ defmodule Philomena.Posts do
     Post
     |> preload(^indexing_preloads())
     |> where([p], field(p, ^column) in ^condition)
-    |> Elasticsearch.reindex(Post)
+    |> Search.reindex(Post)
   end
 end

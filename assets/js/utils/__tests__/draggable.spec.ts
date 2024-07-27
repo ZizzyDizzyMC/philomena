@@ -1,6 +1,7 @@
 import { clearDragSource, initDraggables } from '../draggable';
 import { fireEvent } from '@testing-library/dom';
 import { getRandomArrayItem } from '../../../test/randomness';
+import { MockInstance } from 'vitest';
 
 describe('Draggable Utilities', () => {
   // jsdom lacks proper support for window.DragEvent so this is an attempt at a minimal recreation
@@ -13,7 +14,7 @@ describe('Draggable Utilities', () => {
         items: items as unknown as DataTransferItemList,
         setData(format: string, data: string) {
           items.push({ type: format, getAsString: (callback: FunctionStringCallback) => callback(data) });
-        }
+        },
       } as unknown as DataTransfer;
     }
     Object.assign(mockEvent, { dataTransfer });
@@ -30,7 +31,7 @@ describe('Draggable Utilities', () => {
     const draggingClass = 'dragging';
     const dragContainerClass = 'drag-container';
     const dragOverClass = 'over';
-    let documentEventListenerSpy: jest.SpyInstance;
+    let documentEventListenerSpy: MockInstance;
 
     let mockDragContainer: HTMLDivElement;
     let mockDraggable: HTMLDivElement;
@@ -43,9 +44,8 @@ describe('Draggable Utilities', () => {
       mockDraggable = createDraggableElement();
       mockDragContainer.appendChild(mockDraggable);
 
-
       // Redirect all document event listeners to this element for easier cleanup
-      documentEventListenerSpy = jest.spyOn(document, 'addEventListener').mockImplementation((...params) => {
+      documentEventListenerSpy = vi.spyOn(document, 'addEventListener').mockImplementation((...params) => {
         mockDragContainer.addEventListener(...params);
       });
     });
@@ -66,7 +66,7 @@ describe('Draggable Utilities', () => {
         expect(mockDraggable).toHaveClass(draggingClass);
       });
 
-      it('should add dummy data to the dragstart event if it\'s empty', () => {
+      it("should add dummy data to the dragstart event if it's empty", () => {
         initDraggables();
 
         const mockEvent = createDragEvent('dragstart');
@@ -86,7 +86,7 @@ describe('Draggable Utilities', () => {
         expect(stringValue).toEqual('');
       });
 
-      it('should keep data in the dragstart event if it\'s present', () => {
+      it("should keep data in the dragstart event if it's present", () => {
         initDraggables();
 
         const mockTransferItemType = getRandomArrayItem(['text/javascript', 'image/jpg', 'application/json']);
@@ -94,7 +94,9 @@ describe('Draggable Utilities', () => {
           type: mockTransferItemType,
         } as unknown as DataTransferItem;
 
-        const mockEvent = createDragEvent('dragstart', { dataTransfer: { items: [mockDataTransferItem] as unknown as DataTransferItemList } } as DragEventInit);
+        const mockEvent = createDragEvent('dragstart', {
+          dataTransfer: { items: [mockDataTransferItem] as unknown as DataTransferItemList },
+        } as DragEventInit);
         expect(mockEvent.dataTransfer?.items).toHaveLength(1);
 
         fireEvent(mockDraggable, mockEvent);
@@ -192,7 +194,7 @@ describe('Draggable Utilities', () => {
 
         const mockDropEvent = createDragEvent('drop');
         Object.assign(mockDropEvent, { clientX: 124 });
-        const boundingBoxSpy = jest.spyOn(mockDraggable, 'getBoundingClientRect').mockReturnValue({
+        const boundingBoxSpy = vi.spyOn(mockDraggable, 'getBoundingClientRect').mockReturnValue({
           left: 100,
           width: 50,
         } as unknown as DOMRect);
@@ -202,8 +204,7 @@ describe('Draggable Utilities', () => {
           expect(mockDropEvent.defaultPrevented).toBe(true);
           expect(mockSecondDraggable).not.toHaveClass(draggingClass);
           expect(mockSecondDraggable.nextElementSibling).toBe(mockDraggable);
-        }
-        finally {
+        } finally {
           boundingBoxSpy.mockRestore();
         }
       });
@@ -221,7 +222,7 @@ describe('Draggable Utilities', () => {
 
         const mockDropEvent = createDragEvent('drop');
         Object.assign(mockDropEvent, { clientX: 125 });
-        const boundingBoxSpy = jest.spyOn(mockDraggable, 'getBoundingClientRect').mockReturnValue({
+        const boundingBoxSpy = vi.spyOn(mockDraggable, 'getBoundingClientRect').mockReturnValue({
           left: 100,
           width: 50,
         } as unknown as DOMRect);
@@ -231,8 +232,7 @@ describe('Draggable Utilities', () => {
           expect(mockDropEvent.defaultPrevented).toBe(true);
           expect(mockSecondDraggable).not.toHaveClass(draggingClass);
           expect(mockDraggable.nextElementSibling).toBe(mockSecondDraggable);
-        }
-        finally {
+        } finally {
           boundingBoxSpy.mockRestore();
         }
       });
@@ -253,7 +253,7 @@ describe('Draggable Utilities', () => {
     });
 
     describe('dragEnd', () => {
-      it('should remove dragging class from source and over class from target\'s descendants', () => {
+      it("should remove dragging class from source and over class from target's descendants", () => {
         initDraggables();
 
         const mockStartEvent = createDragEvent('dragstart');
@@ -291,14 +291,13 @@ describe('Draggable Utilities', () => {
         initDraggables();
 
         const mockEvent = createDragEvent('dragstart');
-        const draggableClosestSpy = jest.spyOn(mockDraggable, 'closest').mockReturnValue(null);
+        const draggableClosestSpy = vi.spyOn(mockDraggable, 'closest').mockReturnValue(null);
 
         try {
           fireEvent(mockDraggable, mockEvent);
 
           expect(mockEvent.dataTransfer?.effectAllowed).toBeFalsy();
-        }
-        finally {
+        } finally {
           draggableClosestSpy.mockRestore();
         }
       });

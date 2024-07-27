@@ -6,8 +6,8 @@ defmodule PhilomenaWeb.FilterForcedUsersPlug do
 
   import Phoenix.Controller
   import Plug.Conn
-  alias Philomena.Search.String, as: SearchString
-  alias Philomena.Search.Evaluator
+  alias PhilomenaQuery.Parse.String
+  alias PhilomenaQuery.Parse.Evaluator
   alias Philomena.Images.Query
   alias PhilomenaWeb.ImageView
 
@@ -53,7 +53,10 @@ defmodule PhilomenaWeb.FilterForcedUsersPlug do
   end
 
   defp compile_filter(user, search_string) do
-    case Query.compile(user, SearchString.normalize(search_string)) do
+    search_string
+    |> String.normalize()
+    |> Query.compile(user: user)
+    |> case do
       {:ok, query} -> query
       _error -> %{match_all: %{}}
     end

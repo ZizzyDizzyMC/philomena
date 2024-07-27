@@ -1,5 +1,5 @@
 defmodule Philomena.Images.Query do
-  alias Philomena.Search.Parser
+  alias PhilomenaQuery.Parse.Parser
   alias Philomena.Repo
 
   defp gallery_id_transform(_ctx, value) do
@@ -60,20 +60,36 @@ defmodule Philomena.Images.Query do
     do: {:error, "Unknown `my' value."}
 
   defp invalid_filter_guard(ctx, search_string) do
-    case parse(user_fields(), ctx, Philomena.Search.String.normalize(search_string)) do
+    case parse(user_fields(), ctx, PhilomenaQuery.Parse.String.normalize(search_string)) do
       {:ok, query} -> query
       _error -> %{match_all: %{}}
     end
   end
 
+  defp tag_count_fields do
+    [
+      "body_type_tag_count",
+      "error_tag_count",
+      "character_tag_count",
+      "content_fanmade_tag_count",
+      "content_official_tag_count",
+      "oc_tag_count",
+      "origin_tag_count",
+      "rating_tag_count",
+      "species_tag_count",
+      "spoiler_tag_count"
+    ]
+  end
+
   defp anonymous_fields do
     [
       int_fields:
-        ~W(id width height comment_count score upvotes downvotes faves uploader_id faved_by_id tag_count pixels size),
+        ~W(id width height score upvotes downvotes faves uploader_id faved_by_id pixels size comment_count source_count tag_count) ++
+          tag_count_fields(),
       float_fields: ~W(aspect_ratio wilson_score duration),
       date_fields: ~W(created_at updated_at first_seen_at),
       literal_fields:
-        ~W(faved_by orig_sha512_hash sha512_hash uploader source_url original_format mime_type),
+        ~W(faved_by orig_sha512_hash sha512_hash uploader source_url original_format mime_type file_name),
       bool_fields: ~W(animated processed thumbnails_generated),
       ngram_fields: ~W(description),
       custom_fields: ~W(gallery_id),
@@ -83,7 +99,8 @@ defmodule Philomena.Images.Query do
       aliases: %{
         "faved_by" => "favourited_by_users",
         "faved_by_id" => "favourited_by_user_ids"
-      }
+      },
+      no_downcase_fields: ~W(file_name)
     ]
   end
 
@@ -125,12 +142,13 @@ defmodule Philomena.Images.Query do
 
   defp parse(fields, context, query_string) do
     fields
-    |> Parser.parser()
+    |> Parser.new()
     |> Parser.parse(query_string, context)
   end
 
-  def compile(user, query_string, watch \\ false) do
-    query_string = query_string || ""
+  def compile(query_string, opts \\ []) do
+    user = Keyword.get(opts, :user)
+    watch = Keyword.get(opts, :watch, false)
 
     case user do
       nil ->

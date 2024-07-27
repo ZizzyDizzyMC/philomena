@@ -1,7 +1,8 @@
 import { displayTags, getHiddenTags, getSpoileredTags, imageHitsComplex, imageHitsTags, TagData } from '../tag';
 import { mockStorage } from '../../../test/mock-storage';
 import { getRandomArrayItem } from '../../../test/randomness';
-import parseSearch from '../../match_query';
+import { parseSearch } from '../../match_query';
+import { SpoilerType } from '../../../types/booru-object';
 
 describe('Tag utilities', () => {
   const tagStorageKeyPrefix = 'bor_tags_';
@@ -56,7 +57,7 @@ describe('Tag utilities', () => {
   });
 
   describe('getHiddenTags', () => {
-    it('should get a single hidden tag\'s information', () => {
+    it("should get a single hidden tag's information", () => {
       window.booru.hiddenTagList = [1, 1];
 
       const result = getHiddenTags();
@@ -71,12 +72,7 @@ describe('Tag utilities', () => {
       const result = getHiddenTags();
 
       expect(result).toHaveLength(4);
-      expect(result).toEqual([
-        mockTagInfo[3],
-        mockTagInfo[2],
-        mockTagInfo[1],
-        mockTagInfo[4],
-      ]);
+      expect(result).toEqual([mockTagInfo[3], mockTagInfo[2], mockTagInfo[1], mockTagInfo[4]]);
     });
   });
 
@@ -90,7 +86,7 @@ describe('Tag utilities', () => {
       expect(result).toHaveLength(0);
     });
 
-    it('should get a single spoilered tag\'s information', () => {
+    it("should get a single spoilered tag's information", () => {
       window.booru.spoileredTagList = [1, 1];
       window.booru.ignoredTagList = [];
       window.booru.spoilerType = getEnabledSpoilerType();
@@ -109,12 +105,7 @@ describe('Tag utilities', () => {
       const result = getSpoileredTags();
 
       expect(result).toHaveLength(4);
-      expect(result).toEqual([
-        mockTagInfo[2],
-        mockTagInfo[3],
-        mockTagInfo[1],
-        mockTagInfo[4],
-      ]);
+      expect(result).toEqual([mockTagInfo[2], mockTagInfo[3], mockTagInfo[1], mockTagInfo[4]]);
     });
 
     it('should omit ignored tags from the list', () => {
@@ -124,10 +115,7 @@ describe('Tag utilities', () => {
       const result = getSpoileredTags();
 
       expect(result).toHaveLength(2);
-      expect(result).toEqual([
-        mockTagInfo[1],
-        mockTagInfo[4],
-      ]);
+      expect(result).toEqual([mockTagInfo[1], mockTagInfo[4]]);
     });
   });
 
@@ -139,10 +127,7 @@ describe('Tag utilities', () => {
 
       const result = imageHitsTags(mockImage, [mockTagInfo[1], mockTagInfo[2], mockTagInfo[3], mockTagInfo[4]]);
       expect(result).toHaveLength(mockImageTags.length);
-      expect(result).toEqual([
-        mockTagInfo[1],
-        mockTagInfo[4],
-      ]);
+      expect(result).toEqual([mockTagInfo[1], mockTagInfo[4]]);
     });
 
     it('should return empty array if data attribute is missing', () => {
@@ -173,12 +158,16 @@ describe('Tag utilities', () => {
 
     it('should return the correct value for two tags', () => {
       const result = displayTags([mockTagInfo[1], mockTagInfo[4]]);
-      expect(result).toEqual(`${mockTagInfo[1].name}<span title="${mockTagInfo[4].name}">, ${mockTagInfo[4].name}</span>`);
+      expect(result).toEqual(
+        `${mockTagInfo[1].name}<span title="${mockTagInfo[4].name}">, ${mockTagInfo[4].name}</span>`,
+      );
     });
 
     it('should return the correct value for three tags', () => {
       const result = displayTags([mockTagInfo[1], mockTagInfo[4], mockTagInfo[3]]);
-      expect(result).toEqual(`${mockTagInfo[1].name}<span title="${mockTagInfo[4].name}, ${mockTagInfo[3].name}">, ${mockTagInfo[4].name}, ${mockTagInfo[3].name}</span>`);
+      expect(result).toEqual(
+        `${mockTagInfo[1].name}<span title="${mockTagInfo[4].name}, ${mockTagInfo[3].name}">, ${mockTagInfo[4].name}, ${mockTagInfo[3].name}</span>`,
+      );
     });
 
     it('should escape HTML in the tag name', () => {

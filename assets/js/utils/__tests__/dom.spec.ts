@@ -29,11 +29,11 @@ describe('DOM Utilities', () => {
 
   describe('$', () => {
     afterEach(() => {
-      jest.restoreAllMocks();
+      vi.restoreAllMocks();
     });
 
     it('should call the native querySelector method on document by default', () => {
-      const spy = jest.spyOn(document, 'querySelector');
+      const spy = vi.spyOn(document, 'querySelector');
 
       mockSelectors.forEach((selector, nthCall) => {
         $(selector);
@@ -43,7 +43,7 @@ describe('DOM Utilities', () => {
 
     it('should call the native querySelector method on the passed element', () => {
       const mockElement = document.createElement('br');
-      const spy = jest.spyOn(mockElement, 'querySelector');
+      const spy = vi.spyOn(mockElement, 'querySelector');
 
       mockSelectors.forEach((selector, nthCall) => {
         // FIXME This will not be necessary once the file is properly typed
@@ -55,11 +55,11 @@ describe('DOM Utilities', () => {
 
   describe('$$', () => {
     afterEach(() => {
-      jest.restoreAllMocks();
+      vi.restoreAllMocks();
     });
 
     it('should call the native querySelectorAll method on document by default', () => {
-      const spy = jest.spyOn(document, 'querySelectorAll');
+      const spy = vi.spyOn(document, 'querySelectorAll');
 
       mockSelectors.forEach((selector, nthCall) => {
         $$(selector);
@@ -69,7 +69,7 @@ describe('DOM Utilities', () => {
 
     it('should call the native querySelectorAll method on the passed element', () => {
       const mockElement = document.createElement('br');
-      const spy = jest.spyOn(mockElement, 'querySelectorAll');
+      const spy = vi.spyOn(mockElement, 'querySelectorAll');
 
       mockSelectors.forEach((selector, nthCall) => {
         // FIXME This will not be necessary once the file is properly typed
@@ -87,11 +87,7 @@ describe('DOM Utilities', () => {
     });
 
     it(`should remove the ${hiddenClass} class from all provided elements`, () => {
-      const mockElements = [
-        createHiddenElement('div'),
-        createHiddenElement('a'),
-        createHiddenElement('strong'),
-      ];
+      const mockElements = [createHiddenElement('div'), createHiddenElement('a'), createHiddenElement('strong')];
       showEl(mockElements);
       expect(mockElements[0]).not.toHaveClass(hiddenClass);
       expect(mockElements[1]).not.toHaveClass(hiddenClass);
@@ -99,14 +95,8 @@ describe('DOM Utilities', () => {
     });
 
     it(`should remove the ${hiddenClass} class from elements provided in multiple arrays`, () => {
-      const mockElements1 = [
-        createHiddenElement('div'),
-        createHiddenElement('a'),
-      ];
-      const mockElements2 = [
-        createHiddenElement('strong'),
-        createHiddenElement('em'),
-      ];
+      const mockElements1 = [createHiddenElement('div'), createHiddenElement('a')];
+      const mockElements2 = [createHiddenElement('strong'), createHiddenElement('em')];
       showEl(mockElements1, mockElements2);
       expect(mockElements1[0]).not.toHaveClass(hiddenClass);
       expect(mockElements1[1]).not.toHaveClass(hiddenClass);
@@ -135,14 +125,8 @@ describe('DOM Utilities', () => {
     });
 
     it(`should add the ${hiddenClass} class to elements provided in multiple arrays`, () => {
-      const mockElements1 = [
-        document.createElement('div'),
-        document.createElement('a'),
-      ];
-      const mockElements2 = [
-        document.createElement('strong'),
-        document.createElement('em'),
-      ];
+      const mockElements1 = [document.createElement('div'), document.createElement('a')];
+      const mockElements2 = [document.createElement('strong'), document.createElement('em')];
       hideEl(mockElements1, mockElements2);
       expect(mockElements1[0]).toHaveClass(hiddenClass);
       expect(mockElements1[1]).toHaveClass(hiddenClass);
@@ -159,24 +143,15 @@ describe('DOM Utilities', () => {
     });
 
     it('should set the disabled attribute to true on all provided elements', () => {
-      const mockElements = [
-        document.createElement('input'),
-        document.createElement('button'),
-      ];
+      const mockElements = [document.createElement('input'), document.createElement('button')];
       disableEl(mockElements);
       expect(mockElements[0]).toBeDisabled();
       expect(mockElements[1]).toBeDisabled();
     });
 
     it('should set the disabled attribute to true on elements provided in multiple arrays', () => {
-      const mockElements1 = [
-        document.createElement('input'),
-        document.createElement('button'),
-      ];
-      const mockElements2 = [
-        document.createElement('textarea'),
-        document.createElement('button'),
-      ];
+      const mockElements1 = [document.createElement('input'), document.createElement('button')];
+      const mockElements2 = [document.createElement('textarea'), document.createElement('button')];
       disableEl(mockElements1, mockElements2);
       expect(mockElements1[0]).toBeDisabled();
       expect(mockElements1[1]).toBeDisabled();
@@ -193,24 +168,15 @@ describe('DOM Utilities', () => {
     });
 
     it('should set the disabled attribute to false on all provided elements', () => {
-      const mockElements = [
-        document.createElement('input'),
-        document.createElement('button'),
-      ];
+      const mockElements = [document.createElement('input'), document.createElement('button')];
       enableEl(mockElements);
       expect(mockElements[0]).toBeEnabled();
       expect(mockElements[1]).toBeEnabled();
     });
 
     it('should set the disabled attribute to false on elements provided in multiple arrays', () => {
-      const mockElements1 = [
-        document.createElement('input'),
-        document.createElement('button'),
-      ];
-      const mockElements2 = [
-        document.createElement('textarea'),
-        document.createElement('button'),
-      ];
+      const mockElements1 = [document.createElement('input'), document.createElement('button')];
+      const mockElements2 = [document.createElement('textarea'), document.createElement('button')];
       enableEl(mockElements1, mockElements2);
       expect(mockElements1[0]).toBeEnabled();
       expect(mockElements1[1]).toBeEnabled();
@@ -245,14 +211,8 @@ describe('DOM Utilities', () => {
     });
 
     it(`should toggle the ${hiddenClass} class on elements provided in multiple arrays`, () => {
-      const mockElements1 = [
-        createHiddenElement('div'),
-        document.createElement('a'),
-      ];
-      const mockElements2 = [
-        createHiddenElement('strong'),
-        document.createElement('em'),
-      ];
+      const mockElements1 = [createHiddenElement('div'), document.createElement('a')];
+      const mockElements2 = [createHiddenElement('strong'), document.createElement('em')];
       toggleEl(mockElements1, mockElements2);
       expect(mockElements1[0]).not.toHaveClass(hiddenClass);
       expect(mockElements1[1]).toHaveClass(hiddenClass);
@@ -311,7 +271,7 @@ describe('DOM Utilities', () => {
 
   describe('removeEl', () => {
     afterEach(() => {
-      jest.restoreAllMocks();
+      vi.restoreAllMocks();
     });
 
     it('should NOT throw error if element has no parent', () => {
@@ -324,7 +284,7 @@ describe('DOM Utilities', () => {
       const childNode = document.createElement('p');
       parentNode.appendChild(childNode);
 
-      const spy = jest.spyOn(parentNode, 'removeChild');
+      const spy = vi.spyOn(parentNode, 'removeChild');
 
       removeEl(childNode);
       expect(spy).toHaveBeenCalledTimes(1);
@@ -374,7 +334,7 @@ describe('DOM Utilities', () => {
     });
 
     it('should call callback on left click', () => {
-      const mockCallback = jest.fn();
+      const mockCallback = vi.fn();
       const element = document.createElement('div');
       cleanup = onLeftClick(mockCallback, element as unknown as Document);
 
@@ -384,7 +344,7 @@ describe('DOM Utilities', () => {
     });
 
     it('should NOT call callback on non-left click', () => {
-      const mockCallback = jest.fn();
+      const mockCallback = vi.fn();
       const element = document.createElement('div');
       cleanup = onLeftClick(mockCallback, element as unknown as Document);
 
@@ -395,7 +355,7 @@ describe('DOM Utilities', () => {
     });
 
     it('should add click event listener to the document by default', () => {
-      const mockCallback = jest.fn();
+      const mockCallback = vi.fn();
       cleanup = onLeftClick(mockCallback);
 
       fireEvent.click(document.body);
@@ -404,7 +364,7 @@ describe('DOM Utilities', () => {
     });
 
     it('should return a cleanup function that removes the listener', () => {
-      const mockCallback = jest.fn();
+      const mockCallback = vi.fn();
       const element = document.createElement('div');
       const localCleanup = onLeftClick(mockCallback, element as unknown as Document);
 
@@ -424,30 +384,28 @@ describe('DOM Utilities', () => {
   describe('whenReady', () => {
     it('should call callback immediately if document ready state is not loading', () => {
       const mockReadyStateValue = getRandomArrayItem<DocumentReadyState>(['complete', 'interactive']);
-      const readyStateSpy = jest.spyOn(document, 'readyState', 'get').mockReturnValue(mockReadyStateValue);
-      const mockCallback = jest.fn();
+      const readyStateSpy = vi.spyOn(document, 'readyState', 'get').mockReturnValue(mockReadyStateValue);
+      const mockCallback = vi.fn();
 
       try {
         whenReady(mockCallback);
         expect(mockCallback).toHaveBeenCalledTimes(1);
-      }
-      finally {
+      } finally {
         readyStateSpy.mockRestore();
       }
     });
 
     it('should add event listener with callback if document ready state is loading', () => {
-      const readyStateSpy = jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
-      const addEventListenerSpy = jest.spyOn(document, 'addEventListener');
-      const mockCallback = jest.fn();
+      const readyStateSpy = vi.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+      const addEventListenerSpy = vi.spyOn(document, 'addEventListener');
+      const mockCallback = vi.fn();
 
       try {
         whenReady(mockCallback);
         expect(addEventListenerSpy).toHaveBeenCalledTimes(1);
         expect(addEventListenerSpy).toHaveBeenNthCalledWith(1, 'DOMContentLoaded', mockCallback);
         expect(mockCallback).not.toHaveBeenCalled();
-      }
-      finally {
+      } finally {
         readyStateSpy.mockRestore();
         addEventListenerSpy.mockRestore();
       }
@@ -456,7 +414,9 @@ describe('DOM Utilities', () => {
 
   describe('escapeHtml', () => {
     it('should replace only the expected characters with their HTML entity equivalents', () => {
-      expect(escapeHtml('<script src="http://example.com/?a=1&b=2"></script>')).toBe('&lt;script src=&quot;http://example.com/?a=1&amp;b=2&quot;&gt;&lt;/script&gt;');
+      expect(escapeHtml('<script src="http://example.com/?a=1&b=2"></script>')).toBe(
+        '&lt;script src=&quot;http://example.com/?a=1&amp;b=2&quot;&gt;&lt;/script&gt;',
+      );
     });
   });
 

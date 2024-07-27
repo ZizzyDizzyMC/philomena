@@ -1,7 +1,7 @@
 defmodule PhilomenaWeb.Api.Json.Search.CommentController do
   use PhilomenaWeb, :controller
 
-  alias Philomena.Elasticsearch
+  alias PhilomenaQuery.Search
   alias Philomena.Comments.Comment
   alias Philomena.Comments.Query
   import Ecto.Query
@@ -10,11 +10,11 @@ defmodule PhilomenaWeb.Api.Json.Search.CommentController do
     user = conn.assigns.current_user
     filter = conn.assigns.current_filter
 
-    case Query.compile(user, params["q"] || "") do
+    case Query.compile(params["q"], user: user) do
       {:ok, query} ->
         comments =
           Comment
-          |> Elasticsearch.search_definition(
+          |> Search.search_definition(
             %{
               query: %{
                 bool: %{
@@ -31,7 +31,7 @@ defmodule PhilomenaWeb.Api.Json.Search.CommentController do
             },
             conn.assigns.pagination
           )
-          |> Elasticsearch.search_records(preload(Comment, [:image, :user]))
+          |> Search.search_records(preload(Comment, [:image, :user]))
 
         conn
         |> put_view(PhilomenaWeb.Api.Json.CommentView)

@@ -58,6 +58,9 @@ defmodule Philomena.ArtistLinks.ArtistLink do
     |> parse_uri()
     |> put_verification_code()
     |> put_next_check_at()
+    |> unique_constraint([:uri, :tag_id, :user_id],
+      name: :index_artist_links_on_uri_tag_id_user_id
+    )
   end
 
   def validate_category(changeset) do
@@ -85,11 +88,10 @@ defmodule Philomena.ArtistLinks.ArtistLink do
   end
 
   def contact_changeset(artist_link, user) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-
-    change(artist_link)
+    artist_link
+    |> change()
     |> put_change(:contacted_by_user_id, user.id)
-    |> put_change(:contacted_at, now)
+    |> put_change(:contacted_at, DateTime.utc_now(:second))
     |> put_change(:aasm_state, "contacted")
   end
 
@@ -108,9 +110,9 @@ defmodule Philomena.ArtistLinks.ArtistLink do
 
   defp put_next_check_at(changeset) do
     time =
-      DateTime.utc_now()
+      :second
+      |> DateTime.utc_now()
       |> DateTime.add(60 * 2, :second)
-      |> DateTime.truncate(:second)
 
     change(changeset, next_check_at: time)
   end

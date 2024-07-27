@@ -14,7 +14,7 @@ defmodule PhilomenaWeb.ImageController do
     Galleries.Gallery
   }
 
-  alias Philomena.Elasticsearch
+  alias PhilomenaQuery.Search
   alias Philomena.Interactions
   alias Philomena.Comments
   alias Philomena.Repo
@@ -41,7 +41,7 @@ defmodule PhilomenaWeb.ImageController do
     {:ok, {images, _tags}} =
       ImageLoader.search_string(conn, "created_at.lte:3 minutes ago, processed:true")
 
-    images = Elasticsearch.search_records(images, preload(Image, [:sources, tags: :aliases]))
+    images = Search.search_records(images, preload(Image, [:sources, tags: :aliases]))
 
     interactions = Interactions.user_interactions(images, conn.assigns.current_user)
 
@@ -129,7 +129,7 @@ defmodule PhilomenaWeb.ImageController do
 
         conn
         |> put_flash(:info, "Image created successfully.")
-        |> redirect(to: Routes.image_path(conn, :show, image))
+        |> redirect(to: ~p"/images/#{image}")
 
       {:error, :image, changeset, _} ->
         conn
@@ -209,7 +209,7 @@ defmodule PhilomenaWeb.ImageController do
           :info,
           "The image you were looking for has been marked a duplicate of the image below"
         )
-        |> redirect(to: Routes.image_path(conn, :show, image.duplicate_id))
+        |> redirect(to: ~p"/images/#{image.duplicate_id}")
         |> halt()
 
       true ->

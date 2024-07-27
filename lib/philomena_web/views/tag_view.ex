@@ -3,7 +3,7 @@ defmodule PhilomenaWeb.TagView do
 
   # this is bad practice, don't copy this.
   alias Philomena.Config
-  alias Philomena.Elasticsearch
+  alias PhilomenaQuery.Search
   alias Philomena.Tags.Tag
   alias Philomena.Repo
   alias PhilomenaWeb.ImageScope
@@ -103,6 +103,8 @@ defmodule PhilomenaWeb.TagView do
     {tags, shipping, data}
   end
 
+  # This is a rendered template, so raw/1 has no effect on safety
+  # sobelow_skip ["XSS.Raw"]
   defp render_quick_tags({tags, shipping, data}, conn) do
     render(PhilomenaWeb.TagView, "_quick_tag_table.html",
       tags: tags,
@@ -110,6 +112,8 @@ defmodule PhilomenaWeb.TagView do
       data: data,
       conn: conn
     )
+    |> Phoenix.HTML.Safe.to_iodata()
+    |> Phoenix.HTML.raw()
   end
 
   defp names_in_tab("default", data) do
@@ -139,7 +143,7 @@ defmodule PhilomenaWeb.TagView do
 
   defp implied_by_multitag(tag_names, ignore_tag_names) do
     Tag
-    |> Elasticsearch.search_definition(
+    |> Search.search_definition(
       %{
         query: %{
           bool: %{
@@ -151,7 +155,7 @@ defmodule PhilomenaWeb.TagView do
       },
       %{page_size: 40}
     )
-    |> Elasticsearch.search_records(preload(Tag, :implied_tags))
+    |> Search.search_records(preload(Tag, :implied_tags))
   end
 
   defp manages_links?(conn),

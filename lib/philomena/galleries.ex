@@ -7,16 +7,20 @@ defmodule Philomena.Galleries do
   alias Ecto.Multi
   alias Philomena.Repo
 
-  alias Philomena.Elasticsearch
+  alias PhilomenaQuery.Search
   alias Philomena.Galleries.Gallery
   alias Philomena.Galleries.Interaction
-  alias Philomena.Galleries.ElasticsearchIndex, as: GalleryIndex
+  alias Philomena.Galleries.SearchIndex, as: GalleryIndex
   alias Philomena.IndexWorker
   alias Philomena.GalleryReorderWorker
   alias Philomena.Notifications
   alias Philomena.NotificationWorker
   alias Philomena.Notifications.{Notification, UnreadNotification}
   alias Philomena.Images
+
+  use Philomena.Subscriptions,
+    actor_types: ~w(Gallery),
+    id_name: :gallery_id
 
   @doc """
   Gets a single gallery.
@@ -135,7 +139,7 @@ defmodule Philomena.Galleries do
   def user_name_reindex(old_name, new_name) do
     data = GalleryIndex.user_name_update_by_query(old_name, new_name)
 
-    Elasticsearch.update_by_query(Gallery, data.query, data.set_replacements, data.replacements)
+    Search.update_by_query(Gallery, data.query, data.set_replacements, data.replacements)
   end
 
   defp reindex_after_update({:ok, gallery}) do
@@ -155,7 +159,7 @@ defmodule Philomena.Galleries do
   end
 
   def unindex_gallery(%Gallery{} = gallery) do
-    Elasticsearch.delete_document(gallery.id, Gallery)
+    Search.delete_document(gallery.id, Gallery)
 
     gallery
   end
@@ -168,7 +172,7 @@ defmodule Philomena.Galleries do
     Gallery
     |> preload(^indexing_preloads())
     |> where([g], field(g, ^column) in ^condition)
-    |> Elasticsearch.reindex(Gallery)
+    |> Search.reindex(Gallery)
   end
 
   def add_image_to_gallery(gallery, image) do
@@ -203,7 +207,7 @@ defmodule Philomena.Galleries do
     |> case do
       {:ok, result} ->
         Images.reindex_image(image)
-        notify_gallery(gallery)
+        notify_gallery(gallery, image)
         reindex_gallery(gallery)
 
         {:ok, result}
@@ -261,11 +265,11 @@ defmodule Philomena.Galleries do
     |> Repo.aggregate(:max, :position)
   end
 
-  def notify_gallery(gallery) do
-    Exq.enqueue(Exq, "notifications", NotificationWorker, ["Galleries", gallery.id])
+  def notify_gallery(gallery, image) do
+    Exq.enqueue(Exq, "notifications", NotificationWorker, ["Galleries", [gallery.id, image.id]])
   end
 
-  def perform_notify(gallery_id) do
+  def perform_notify([gallery_id, image_id]) do
     gallery = get_gallery!(gallery_id)
 
     subscriptions =
@@ -279,8 +283,8 @@ defmodule Philomena.Galleries do
       %{
         actor_id: gallery.id,
         actor_type: "Gallery",
-        actor_child_id: nil,
-        actor_child_type: nil,
+        actor_child_id: image_id,
+        actor_child_type: "Image",
         action: "added images to"
       }
     )
@@ -333,7 +337,7 @@ defmodule Philomena.Galleries do
       end)
 
     changes
-    |> Enum.map(fn change ->
+    |> Enum.each(fn change ->
       id = Keyword.fetch!(change, :id)
       change = Keyword.delete(change, :id)
 
@@ -356,55 +360,4 @@ defmodule Philomena.Galleries do
 
   defp position_order(%{order_position_asc: true}), do: [asc: :position]
   defp position_order(_gallery), do: [desc: :position]
-
-  alias Philomena.Galleries.Subscription
-
-  def subscribed?(_gallery, nil), do: false
-
-  def subscribed?(gallery, user) do
-    Subscription
-    |> where(gallery_id: ^gallery.id, user_id: ^user.id)
-    |> Repo.exists?()
-  end
-
-  @doc """
-  Creates a subscription.
-
-  ## Examples
-
-      iex> create_subscription(%{field: value})
-      {:ok, %Subscription{}}
-
-      iex> create_subscription(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_subscription(gallery, user) do
-    %Subscription{gallery_id: gallery.id, user_id: user.id}
-    |> Subscription.changeset(%{})
-    |> Repo.insert(on_conflict: :nothing)
-  end
-
-  @doc """
-  Deletes a Subscription.
-
-  ## Examples
-
-      iex> delete_subscription(subscription)
-      {:ok, %Subscription{}}
-
-      iex> delete_subscription(subscription)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_subscription(gallery, user) do
-    %Subscription{gallery_id: gallery.id, user_id: user.id}
-    |> Repo.delete()
-  end
-
-  def clear_notification(_gallery, nil), do: nil
-
-  def clear_notification(gallery, user) do
-    Notifications.delete_unread_notification("Gallery", gallery.id, user)
-  end
 end

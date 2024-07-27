@@ -99,6 +99,7 @@ defmodule Philomena.Images.Image do
     field :added_tags, {:array, :any}, default: [], virtual: true
     field :removed_sources, {:array, :any}, default: [], virtual: true
     field :added_sources, {:array, :any}, default: [], virtual: true
+    field :ratings_changed, :boolean, default: false, virtual: true
 
     field :uploaded_image, :string, virtual: true
     field :removed_image, :string, virtual: true
@@ -123,11 +124,9 @@ defmodule Philomena.Images.Image do
   end
 
   def creation_changeset(image, attrs, attribution) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-
     image
     |> cast(attrs, [:anonymous, :source_url, :description])
-    |> change(first_seen_at: now)
+    |> change(first_seen_at: DateTime.utc_now(:second))
     |> change(attribution)
     |> validate_length(:description, max: 50_000, count: :bytes)
     |> validate_format(:source_url, ~r/\Ahttps?:\/\//)
@@ -190,7 +189,7 @@ defmodule Philomena.Images.Image do
     height = fetch_field!(changeset, :image_height)
 
     cond do
-      width <= 0 or height <= 0 ->
+      is_nil(width) or is_nil(height) or width <= 0 or height <= 0 ->
         add_error(
           changeset,
           :image,
@@ -215,11 +214,13 @@ defmodule Philomena.Images.Image do
     image
     |> cast(attrs, [])
     |> SourceDiffer.diff_input(old_sources, new_sources)
+    |> validate_length(:sources, max: 15)
   end
 
   def sources_changeset(image, new_sources) do
     change(image)
     |> put_assoc(:sources, new_sources)
+    |> validate_length(:sources, max: 15)
   end
 
   def tag_changeset(image, attrs, old_tags, new_tags, excluded_tags \\ []) do
@@ -341,7 +342,7 @@ defmodule Philomena.Images.Image do
   def approve_changeset(image) do
     change(image)
     |> put_change(:approved, true)
-    |> put_change(:first_seen_at, DateTime.truncate(DateTime.utc_now(), :second))
+    |> put_change(:first_seen_at, DateTime.utc_now(:second))
   end
 
   def cache_changeset(image) do
@@ -382,7 +383,7 @@ defmodule Philomena.Images.Image do
       tags
       |> Enum.map_join("_", & &1.slug)
       |> String.to_charlist()
-      |> Enum.filter(&(&1 in ?a..?z or &1 in '0123456789_-'))
+      |> Enum.filter(&(&1 in ?a..?z or &1 in ~c"0123456789_-"))
       |> List.to_string()
       |> String.slice(0..150)
 

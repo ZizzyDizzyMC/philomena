@@ -1,5 +1,5 @@
 defmodule Philomena.Posts.Query do
-  alias Philomena.Search.Parser
+  alias PhilomenaQuery.Parse.Parser
 
   defp user_id_transform(_ctx, data) do
     case Integer.parse(data) do
@@ -86,12 +86,12 @@ defmodule Philomena.Posts.Query do
 
   defp parse(fields, context, query_string) do
     fields
-    |> Parser.parser()
+    |> Parser.new()
     |> Parser.parse(query_string, context)
   end
 
-  def compile(user, query_string) do
-    query_string = query_string || ""
+  def compile(query_string, opts \\ []) do
+    user = Keyword.get(opts, :user)
 
     case user do
       nil ->

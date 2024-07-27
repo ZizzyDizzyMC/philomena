@@ -1,21 +1,21 @@
 defmodule PhilomenaWeb.Api.Json.Search.TagController do
   use PhilomenaWeb, :controller
 
-  alias Philomena.Elasticsearch
+  alias PhilomenaQuery.Search
   alias Philomena.Tags.Tag
   alias Philomena.Tags.Query
   import Ecto.Query
 
   def index(conn, params) do
-    case Query.compile(params["q"] || "") do
+    case Query.compile(params["q"]) do
       {:ok, query} ->
         tags =
           Tag
-          |> Elasticsearch.search_definition(
+          |> Search.search_definition(
             %{query: query, sort: %{images: :desc}},
             conn.assigns.pagination
           )
-          |> Elasticsearch.search_records(
+          |> Search.search_records(
             preload(Tag, [:aliased_tag, :aliases, :implied_tags, :implied_by_tags, :dnp_entries])
           )
 

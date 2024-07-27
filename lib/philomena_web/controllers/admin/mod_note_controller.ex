@@ -5,33 +5,23 @@ defmodule PhilomenaWeb.Admin.ModNoteController do
   alias Philomena.ModNotes.ModNote
   alias Philomena.Polymorphic
   alias Philomena.ModNotes
-  alias Philomena.Repo
-  import Ecto.Query
 
   plug :verify_authorized
   plug :load_resource, model: ModNote, only: [:edit, :update, :delete]
   plug :preload_association when action in [:edit, :update, :delete]
 
-  def index(conn, %{"q" => q}) do
-    ModNote
-    |> where([m], ilike(m.body, ^"%#{q}%"))
-    |> load_mod_notes(conn)
-  end
+  def index(conn, params) do
+    pagination = conn.assigns.scrivener
+    renderer = &MarkdownRenderer.render_collection(&1, conn)
 
-  def index(conn, _params) do
-    load_mod_notes(ModNote, conn)
-  end
-
-  defp load_mod_notes(queryable, conn) do
     mod_notes =
-      queryable
-      |> preload(:moderator)
-      |> order_by(desc: :id)
-      |> Repo.paginate(conn.assigns.scrivener)
+      case params do
+        %{"q" => q} ->
+          ModNotes.list_mod_notes_by_query_string(q, renderer, pagination)
 
-    bodies = MarkdownRenderer.render_collection(mod_notes, conn)
-    preloaded = Polymorphic.load_polymorphic(mod_notes, notable: [notable_id: :notable_type])
-    mod_notes = %{mod_notes | entries: Enum.zip(bodies, preloaded)}
+        _ ->
+          ModNotes.list_mod_notes(renderer, pagination)
+      end
 
     render(conn, "index.html", title: "Admin - Mod Notes", mod_notes: mod_notes)
   end
@@ -46,7 +36,7 @@ defmodule PhilomenaWeb.Admin.ModNoteController do
       {:ok, _mod_note} ->
         conn
         |> put_flash(:info, "Successfully created mod note.")
-        |> redirect(to: Routes.admin_mod_note_path(conn, :index))
+        |> redirect(to: ~p"/admin/mod_notes")
 
       {:error, changeset} ->
         render(conn, "new.html", changeset: changeset)
@@ -63,7 +53,7 @@ defmodule PhilomenaWeb.Admin.ModNoteController do
       {:ok, _mod_note} ->
         conn
         |> put_flash(:info, "Successfully updated mod note.")
-        |> redirect(to: Routes.admin_mod_note_path(conn, :index))
+        |> redirect(to: ~p"/admin/mod_notes")
 
       {:error, changeset} ->
         render(conn, "edit.html", changeset: changeset)
@@ -75,7 +65,7 @@ defmodule PhilomenaWeb.Admin.ModNoteController do
 
     conn
     |> put_flash(:info, "Successfully deleted mod note.")
-    |> redirect(to: Routes.admin_mod_note_path(conn, :index))
+    |> redirect(to: ~p"/admin/mod_notes")
   end
 
   defp verify_authorized(conn, _opts) do

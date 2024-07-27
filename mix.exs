@@ -12,7 +12,7 @@ defmodule Philomena.MixProject do
       aliases: aliases(),
       deps: deps(),
       dialyzer: [plt_add_apps: [:mix]],
-      rustler_crates: [philomena: []]
+      docs: [formatters: ["html"]]
     ]
   end
 
@@ -35,7 +35,7 @@ defmodule Philomena.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.6"},
+      {:phoenix, "~> 1.7"},
       {:phoenix_pubsub, "~> 2.1"},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.9"},
@@ -45,8 +45,8 @@ defmodule Philomena.MixProject do
       {:phoenix_live_reload, "~> 1.4", only: :dev},
       {:gettext, "~> 0.22"},
       {:jason, "~> 1.4"},
-      {:ranch, "~> 2.1", override: true},
-      {:plug_cowboy, "~> 2.6"},
+      {:bandit, "~> 1.2"},
+      {:slime, "~> 1.3.1"},
       {:phoenix_slime, "~> 0.13",
        github: "slime-lang/phoenix_slime", ref: "8944de91654d6fcf6bdcc0aed6b8647fe3398241"},
       {:phoenix_pubsub_redis, "~> 3.0"},
@@ -54,21 +54,15 @@ defmodule Philomena.MixProject do
       {:bcrypt_elixir, "~> 3.0"},
       {:pot, "~> 1.0"},
       {:secure_compare, "~> 0.1"},
-      {:elastix, "~> 0.10"},
       {:nimble_parsec, "~> 1.2"},
-      {:canary, "~> 1.1"},
       {:scrivener_ecto, "~> 2.7"},
-      {:pbkdf2, "~> 2.0",
-       github: "code-time/erlang-pbkdf2", ref: "f8f0012a97f58ade9c70ac93260e4259e4ca4b8d"},
+      {:pbkdf2, ">= 0.0.0",
+       github: "basho/erlang-pbkdf2", ref: "7e9bd5fcd3cc3062159e4c9214bb628aa6feb5ca"},
       {:qrcode, "~> 0.1"},
       {:redix, "~> 1.2"},
-      {:bamboo, "~> 2.2"},
-      {:bamboo_smtp, "~> 4.2"},
       {:remote_ip, "~> 1.1"},
       {:briefly, "~> 0.4"},
-      {:tesla, "~> 1.5"},
-      {:castore, "~> 1.0", override: true},
-      {:mint, "~> 1.4"},
+      {:req, "~> 0.5"},
       {:exq, "~> 0.17"},
       {:ex_aws, "~> 2.0",
        github: "liamwhite/ex_aws", ref: "a340859dd8ac4d63bd7a3948f0994e493e49bda4", override: true},
@@ -76,13 +70,19 @@ defmodule Philomena.MixProject do
       {:sweet_xml, "~> 0.7"},
       {:inet_cidr, "~> 1.0"},
 
+      # SMTP
+      {:swoosh, "~> 1.16"},
+      {:mua, "~> 0.2.0"},
+      {:mail, "~> 0.3.0"},
+
       # Markdown
       {:rustler, "~> 0.27"},
 
       # Linting
-      {:credo, "~> 1.6", only: [:dev, :test], override: true},
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:credo_envvar, "~> 0.1", only: [:dev, :test], runtime: false},
       {:credo_naming, "~> 2.0", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.30", only: [:dev], runtime: false},
 
       # Security checks
       {:sobelow, "~> 0.11", only: [:dev, :test], runtime: true},
@@ -91,9 +91,9 @@ defmodule Philomena.MixProject do
       # Static analysis
       {:dialyxir, "~> 1.2", only: :dev, runtime: false},
 
-      # Fixes for OTP/25
-      {:neotoma, "~> 1.7.3", manager: :rebar3, override: true},
-      {:hut, "~> 1.4.0", manager: :rebar3, override: true}
+      # Fixes for Elixir v1.15+
+      {:canary, "~> 1.1",
+       github: "marcinkoziej/canary", ref: "704debde7a2c0600f78c687807884bf37c45bd79"}
     ]
   end
 

@@ -1,24 +1,24 @@
 defmodule PhilomenaWeb.Api.Json.Search.GalleryController do
   use PhilomenaWeb, :controller
 
-  alias Philomena.Elasticsearch
+  alias PhilomenaQuery.Search
   alias Philomena.Galleries.Gallery
   alias Philomena.Galleries.Query
   import Ecto.Query
 
   def index(conn, params) do
-    case Query.compile(params["q"] || "") do
+    case Query.compile(params["q"]) do
       {:ok, query} ->
         galleries =
           Gallery
-          |> Elasticsearch.search_definition(
+          |> Search.search_definition(
             %{
               query: query,
               sort: %{created_at: :desc}
             },
             conn.assigns.pagination
           )
-          |> Elasticsearch.search_records(preload(Gallery, [:creator]))
+          |> Search.search_records(preload(Gallery, [:creator]))
 
         conn
         |> put_view(PhilomenaWeb.Api.Json.GalleryView)

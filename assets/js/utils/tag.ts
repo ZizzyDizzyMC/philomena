@@ -1,5 +1,6 @@
 import { escapeHtml } from './dom';
 import { getTag } from '../booru';
+import { AstMatcher } from '../query/types';
 
 export interface TagData {
   id: number;
@@ -27,13 +28,13 @@ function sortTags(hidden: boolean, a: TagData, b: TagData): number {
   return a.spoiler_image_uri ? -1 : 1;
 }
 
-export function getHiddenTags() {
+export function getHiddenTags(): TagData[] {
   return unique(window.booru.hiddenTagList)
     .map(tagId => getTag(tagId))
     .sort(sortTags.bind(null, true));
 }
 
-export function getSpoileredTags() {
+export function getSpoileredTags(): TagData[] {
   if (window.booru.spoilerType === 'off') return [];
 
   return unique(window.booru.spoileredTagList)
@@ -42,7 +43,7 @@ export function getSpoileredTags() {
     .sort(sortTags.bind(null, false));
 }
 
-export function imageHitsTags(img: HTMLImageElement, matchTags: TagData[]): TagData[] {
+export function imageHitsTags(img: HTMLElement, matchTags: TagData[]): TagData[] {
   const imageTagsString = img.dataset.imageTags;
   if (typeof imageTagsString === 'undefined') {
     return [];
@@ -51,13 +52,15 @@ export function imageHitsTags(img: HTMLImageElement, matchTags: TagData[]): TagD
   return matchTags.filter(t => imageTags.indexOf(t.id) !== -1);
 }
 
-export function imageHitsComplex(img: HTMLImageElement, matchComplex: { hitsImage: (img: HTMLImageElement) => boolean }) {
-  return matchComplex.hitsImage(img);
+export function imageHitsComplex(img: HTMLElement, matchComplex: AstMatcher) {
+  return matchComplex(img);
 }
 
 export function displayTags(tags: TagData[]): string {
-  const mainTag = tags[0], otherTags = tags.slice(1);
-  let list = escapeHtml(mainTag.name), extras;
+  const mainTag = tags[0];
+  const otherTags = tags.slice(1);
+  let list = escapeHtml(mainTag.name);
+  let extras;
 
   if (otherTags.length > 0) {
     extras = otherTags.map(tag => escapeHtml(tag.name)).join(', ');

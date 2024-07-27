@@ -2,6 +2,7 @@ defmodule PhilomenaWeb.Router do
   use PhilomenaWeb, :router
 
   import PhilomenaWeb.UserAuth
+  import PhilomenaWeb.Fingerprint
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -9,6 +10,7 @@ defmodule PhilomenaWeb.Router do
     plug :fetch_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :fetch_fingerprint
     plug :fetch_current_user
     plug PhilomenaWeb.ContentSecurityPolicyPlug
     plug PhilomenaWeb.CurrentFilterPlug
@@ -171,6 +173,7 @@ defmodule PhilomenaWeb.Router do
 
     scope "/notifications", Notification, as: :notification do
       resources "/unread", UnreadController, only: [:index]
+      resources "/categories", CategoryController, only: [:show]
     end
 
     resources "/notifications", NotificationController, only: [:index, :delete]
@@ -395,6 +398,7 @@ defmodule PhilomenaWeb.Router do
           singleton: true
 
         resources "/unlock", User.UnlockController, only: [:create], singleton: true
+        resources "/erase", User.EraseController, only: [:new, :create], singleton: true
         resources "/api_key", User.ApiKeyController, only: [:delete], singleton: true
         resources "/downvotes", User.DownvoteController, only: [:delete], singleton: true
         resources "/votes", User.VoteController, only: [:delete], singleton: true
