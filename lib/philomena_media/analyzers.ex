@@ -3,7 +3,7 @@ defmodule PhilomenaMedia.Analyzers do
   Utilities for analyzing the format and various attributes of uploaded files.
   """
 
-  alias PhilomenaMedia.Analyzers.{Gif, Jpeg, Png, Svg, Webm}
+  alias PhilomenaMedia.Analyzers.{Gif, Jpeg, Png, Svg, Webm, Mp4}
   alias PhilomenaMedia.Analyzers.Result
   alias PhilomenaMedia.Mime
 
@@ -17,6 +17,7 @@ defmodule PhilomenaMedia.Analyzers do
   - `image/png`
   - `image/svg+xml`
   - `video/webm`
+  - `video/mp4`
 
   > #### Info {: .info}
   >
@@ -37,6 +38,7 @@ defmodule PhilomenaMedia.Analyzers do
   def analyzer("image/png"), do: {:ok, Png}
   def analyzer("image/svg+xml"), do: {:ok, Svg}
   def analyzer("video/webm"), do: {:ok, Webm}
+  def analyzer("video/mp4"), do: {:ok, Mp4}
   def analyzer(_content_type), do: :error
 
   @doc """

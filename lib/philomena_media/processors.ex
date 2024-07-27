@@ -59,7 +59,7 @@ defmodule PhilomenaMedia.Processors do
 
   alias PhilomenaMedia.Analyzers.Result
   alias PhilomenaMedia.Intensities
-  alias PhilomenaMedia.Processors.{Gif, Jpeg, Png, Svg, Webm}
+  alias PhilomenaMedia.Processors.{Gif, Jpeg, Png, Svg, Webm, Mp4}
   alias PhilomenaMedia.Mime
 
   @typedoc "The name of a version, like `:large`."
@@ -99,6 +99,7 @@ defmodule PhilomenaMedia.Processors do
   - `image/png`
   - `image/svg+xml`
   - `video/webm`
+  - `video/mp4`
 
   > #### Info {: .info}
   >
@@ -122,6 +123,7 @@ defmodule PhilomenaMedia.Processors do
   def processor("image/png"), do: Png
   def processor("image/svg+xml"), do: Svg
   def processor("video/webm"), do: Webm
+  def processor("video/mp4"), do: Mp4
   def processor(_content_type), do: nil
 
   @doc """
