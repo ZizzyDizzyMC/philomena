@@ -149,7 +149,7 @@ function loadBooruData() {
 function BooruOnRails() {
   this.apiEndpoint = '/api/v2/';
   this.hiddenTag = '/images/tagblocked.svg';
-  this.tagsVersion = 6;
+  this.tagsVersion = 7;
 }
 
 window.booru = new BooruOnRails();
