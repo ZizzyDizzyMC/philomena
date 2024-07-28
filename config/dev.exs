@@ -76,7 +76,7 @@ config :philomena, PhilomenaWeb.Endpoint,
 config :philomena, csp_relaxed: true
 
 # Enable Vite HMR
-config :philomena, vite_reload: true
+config :philomena, vite_reload: false
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
