@@ -69,17 +69,17 @@ defmodule PhilomenaWeb.LayoutView do
     Config.get(:footer)
   end
 
-  def stylesheet_path(%{theme: "dark"}), do: ~p"/css/dark.css"
-  def stylesheet_path(%{theme: "red"}), do: ~p"/css/red.css"
-  def stylesheet_path(%{theme: "olddefault"}), do: ~p"/css/olddefault.css"
-  def stylesheet_path(%{theme: "ponerpics-default"}), do: ~p"/css/ponerpics-default.css"
-  def stylesheet_path(%{theme: "manebooru-fuchsia"}), do: ~p"/css/manebooru-fuchsia.css"
-  def stylesheet_path(%{theme: "manebooru-green"}), do: ~p"/css/manebooru-green.css"
-  def stylesheet_path(%{theme: "manebooru-orange"}), do: ~p"/css/manebooru-orange.css"
-  def stylesheet_path(%{theme: "twibooru-default"}), do: ~p"/css/twibooru-default.css"
-  def stylesheet_path(%{theme: "furbooru-default"}), do: ~p"/css/furbooru-default.css"
-  def stylesheet_path(%{theme: "bronyhub-default"}), do: ~p"/css/bronyhub-default.css"
-  def stylesheet_path(%{theme: "ponybooru-default"}), do: ~p"/css/ponybooru-default.css"
+  def stylesheet_path(_conn, %{theme: "dark"}), do: ~p"/css/dark.css"
+  def stylesheet_path(_conn, %{theme: "red"}), do: ~p"/css/red.css"
+  def stylesheet_path(_conn, %{theme: "olddefault"}), do: ~p"/css/olddefault.css"
+  def stylesheet_path(_conn, %{theme: "ponerpics-default"}), do: ~p"/css/ponerpics-default.css"
+  def stylesheet_path(_conn, %{theme: "manebooru-fuchsia"}), do: ~p"/css/manebooru-fuchsia.css"
+  def stylesheet_path(_conn, %{theme: "manebooru-green"}), do: ~p"/css/manebooru-green.css"
+  def stylesheet_path(_conn, %{theme: "manebooru-orange"}), do: ~p"/css/manebooru-orange.css"
+  def stylesheet_path(_conn, %{theme: "twibooru-default"}), do: ~p"/css/twibooru-default.css"
+  def stylesheet_path(_conn, %{theme: "furbooru-default"}), do: ~p"/css/furbooru-default.css"
+  def stylesheet_path(_conn, %{theme: "bronyhub-default"}), do: ~p"/css/bronyhub-default.css"
+  def stylesheet_path(_conn, %{theme: "ponybooru-default"}), do: ~p"/css/ponybooru-default.css"
   def stylesheet_path(conn, _user), do: static_path(conn, "/css/#{booru_style()}.css")
   def dark_stylesheet_path(conn), do: static_path(conn, "/css/#{booru_dark_style()}.css")
 
