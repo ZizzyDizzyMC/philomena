@@ -80,8 +80,8 @@ defmodule PhilomenaWeb.LayoutView do
   def stylesheet_path(%{theme: "furbooru-default"}), do: ~p"/css/furbooru-default.css"
   def stylesheet_path(%{theme: "bronyhub-default"}), do: ~p"/css/bronyhub-default.css"
   def stylesheet_path(%{theme: "ponybooru-default"}), do: ~p"/css/ponybooru-default.css"
-  def stylesheet_path(_conn, _user), do: static_path(_conn, "/css/#{booru_style()}.css")
-  def dark_stylesheet_path(_conn), do: static_path(_conn, "/css/#{booru_dark_style()}.css")
+  def stylesheet_path(conn, _user), do: static_path(conn, "/css/#{booru_style()}.css")
+  def dark_stylesheet_path(conn), do: static_path(conn, "/css/#{booru_dark_style()}.css")
 
   def theme_name(%{theme: theme}), do: theme
   def theme_name(_user), do: "default"
