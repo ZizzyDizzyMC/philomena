@@ -3,7 +3,7 @@ defmodule PhilomenaWeb.SettingView do
 
   def theme_options do
     [  
-      [key: "#{booru_name()} Default", value: "default", data: [theme_path: static_path(@conn, "/css/#{booru_style()}.css")]],
+      [key: "#{booru_name()} Default", value: "default", data: [theme_path: static_path(conn, "/css/#{booru_style()}.css")]],
       [key: "Dark", value: "dark", data: [theme_path: ~p"/css/dark.css"]],
       [key: "Red", value: "red", data: [theme_path: ~p"/css/red.css"]],
       [key: "Philomena Light", value: "olddefault", data: [theme_path: ~p"/css/olddefault.css"]],
