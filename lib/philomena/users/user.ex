@@ -70,7 +70,7 @@ defmodule Philomena.Users.User do
 
     # Settings
     field :spoiler_type, :string, default: "static"
-    field :theme, :string, default: "#{Application.get_env(:philomena, :booru_style)}"
+    field :theme, :string, default: "#{Application.compile_env(:philomena, :booru_style)}"
     field :images_per_page, :integer, default: 15
     field :show_large_thumbnails, :boolean, default: true
     field :show_sidebar_and_watched_images, :boolean, default: true
@@ -519,11 +519,11 @@ defmodule Philomena.Users.User do
     provisioning_uri = %URI{
       scheme: "otpauth",
       host: "totp",
-      path: "/#{Application.get_env(:philomena, :booru_name)}:" <> user.email,
+      path: "/#{Application.compile_env(:philomena, :booru_name)}:" <> user.email,
       query:
         URI.encode_query(%{
           secret: secret,
-          issuer: "#{Application.get_env(:philomena, :booru_name)}"
+          issuer: "#{Application.compile_env(:philomena, :booru_name)}"
         })
     }
 
