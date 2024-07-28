@@ -25,8 +25,8 @@ defmodule Philomena.Users.User do
   @derive {Phoenix.Param, key: :slug}
   @derive {Inspect, except: [:password]}
   # get variables
-  @booru_style = "{#Application.compile_env(:philomena, :booru_style)}"
-  @booru_name = "{#Application.compile_env(:philomena, :booru_name)}"
+  @booru_style "{#Application.compile_env(:philomena, :booru_style)}"
+  @booru_name "{#Application.compile_env(:philomena, :booru_name)}"
   schema "users" do
     has_many :links, ArtistLink
     has_many :verified_links, ArtistLink, where: [aasm_state: "verified"]
