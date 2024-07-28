@@ -1,4 +1,4 @@
-defmodule Philomena.Analyzers.Mp4 do
+defmodule PhilomenaMedia.Analyzers.Mp4 do
   def analyze(file) do
     stats = stats(file)
 

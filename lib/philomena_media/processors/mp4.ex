@@ -1,4 +1,4 @@
-defmodule Philomena.Processors.Mp4 do
+defmodule PhilomenaMedia.Processors.Mp4 do
   alias PhilomenaMedia.Intensities
   alias PhilomenaMedia.Analyzers.Result
   alias PhilomenaMedia.GifPreview
