@@ -1,7 +1,7 @@
 defmodule PhilomenaWeb.SettingView do
   use PhilomenaWeb, :view
   alias Plug.Conn
-  def theme_options(_conn) do
+  def theme_options(conn) do
     [  
       [key: "#{booru_name()} Default", value: "default", data: [theme_path: static_path(conn, "/css/#{booru_style()}.css")]],
       [key: "Dark", value: "dark", data: [theme_path: ~p"/css/dark.css"]],
