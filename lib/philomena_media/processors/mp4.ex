@@ -32,12 +32,13 @@ defmodule Philomena.Processors.Mp4 do
     {:ok, intensities} = Intensities.file(preview)
 
     scaled = Enum.flat_map(versions, &scale(stripped, duration, dimensions, &1))
+    webm = [{:copy, webm, "full.webm"}]
 
-    %{
+    [
       replace_original: stripped,
       intensities: intensities,
-      thumbnails: scaled ++ [{:copy, preview, "rendered.png"}]
-    }
+      thumbnails: scaled ++ webm ++ [{:copy, preview, "rendered.png"}]
+    ]
   end
 
   @spec post_process(Result.t(), Path.t()) :: Processors.edit_script()
@@ -161,9 +162,8 @@ defmodule Philomena.Processors.Mp4 do
   end
 
   defp scale_webm_only(file, dimensions, target_dimensions) do
-    {width, height} = box_dimensions(dimensions, target_dimensions)
+    filter = scale_filter(dimensions, target_dimensions)
     webm = Briefly.create!(extname: ".webm")
-    scale_filter = "scale=w=#{width}:h=#{height}"
 
     {_output, 0} =
       System.cmd("ffmpeg", [
