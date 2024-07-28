@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 14.1
--- Dumped by pg_dump version 14.1
+-- Dumped from database version 16.3
+-- Dumped by pg_dump version 16.3
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -963,7 +963,8 @@ CREATE TABLE public.images (
     image_duration double precision,
     description character varying DEFAULT ''::character varying NOT NULL,
     scratchpad character varying,
-    approved boolean DEFAULT false
+    approved boolean DEFAULT false,
+    image_orig_size integer
 );
 
 
@@ -5019,6 +5020,9 @@ ALTER TABLE ONLY public.image_views
 
 ALTER TABLE ONLY public.moderation_logs
     ADD CONSTRAINT moderation_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: source_changes source_changes_image_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5076,3 +5080,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20211009011024);
 INSERT INTO public."schema_migrations" (version) VALUES (20211107130226);
 INSERT INTO public."schema_migrations" (version) VALUES (20211219194836);
 INSERT INTO public."schema_migrations" (version) VALUES (20220321173359);
+INSERT INTO public."schema_migrations" (version) VALUES (20240723122759);

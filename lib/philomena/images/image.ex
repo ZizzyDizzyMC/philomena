@@ -54,6 +54,7 @@ defmodule Philomena.Images.Image do
     field :image_width, :integer
     field :image_height, :integer
     field :image_size, :integer
+    field :image_orig_size, :integer
     field :image_format, :string
     field :image_mime_type, :string
     field :image_aspect_ratio, :float
@@ -140,6 +141,7 @@ defmodule Philomena.Images.Image do
       :image_width,
       :image_height,
       :image_size,
+      :image_orig_size,
       :image_format,
       :image_mime_type,
       :image_aspect_ratio,
@@ -155,6 +157,7 @@ defmodule Philomena.Images.Image do
       :image_width,
       :image_height,
       :image_size,
+      :image_orig_size,
       :image_format,
       :image_mime_type,
       :image_aspect_ratio,
