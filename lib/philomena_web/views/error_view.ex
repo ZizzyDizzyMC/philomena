@@ -3,7 +3,7 @@ defmodule PhilomenaWeb.ErrorView do
 
   import PhilomenaWeb.LayoutView,
     only: [
-      stylesheet_path: 1,
+      stylesheet_path: 2,
       dark_stylesheet_path: 1,
       viewport_meta_tag: 1
     ]
