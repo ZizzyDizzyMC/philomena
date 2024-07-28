@@ -24,6 +24,9 @@ defmodule Philomena.Users.User do
 
   @derive {Phoenix.Param, key: :slug}
   @derive {Inspect, except: [:password]}
+  # get variables
+  @booru_style = "{#Application.compile_env(:philomena, :booru_style)}"
+  @booru_name = "{#Application.compile_env(:philomena, :booru_name)}"
   schema "users" do
     has_many :links, ArtistLink
     has_many :verified_links, ArtistLink, where: [aasm_state: "verified"]
@@ -70,7 +73,7 @@ defmodule Philomena.Users.User do
 
     # Settings
     field :spoiler_type, :string, default: "static"
-    field :theme, :string, default: "#{Application.compile_env(:philomena, :booru_style)}"
+    field :theme, :string, default: @booru_style
     field :images_per_page, :integer, default: 15
     field :show_large_thumbnails, :boolean, default: true
     field :show_sidebar_and_watched_images, :boolean, default: true
@@ -519,11 +522,11 @@ defmodule Philomena.Users.User do
     provisioning_uri = %URI{
       scheme: "otpauth",
       host: "totp",
-      path: "/#{Application.compile_env(:philomena, :booru_name)}:" <> user.email,
+      path: "/#{@booru_name}:#{user.email}"
       query:
         URI.encode_query(%{
           secret: secret,
-          issuer: "#{Application.compile_env(:philomena, :booru_name)}"
+          issuer: @booru_name
         })
     }
 
