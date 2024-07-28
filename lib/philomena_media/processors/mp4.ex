@@ -1,19 +1,37 @@
 defmodule Philomena.Processors.Mp4 do
-  alias Philomena.Intensities
+  alias PhilomenaMedia.Intensities
+  alias PhilomenaMedia.Analyzers.Result
+  alias PhilomenaMedia.GifPreview
+  alias PhilomenaMedia.Processors.Processor
+  alias PhilomenaMedia.Processors
   import Bitwise
 
+@behaviour Processor
+
+  @spec versions(Processors.version_list()) :: [Processors.version_filename()]
+  def versions(sizes) do
+    webm_versions = Enum.map(sizes, fn {name, _} -> "#{name}.webm" end)
+    mp4_versions = Enum.map(sizes, fn {name, _} -> "#{name}.mp4" end)
+
+    gif_versions =
+      sizes
+      |> Enum.filter(fn {name, _} -> name in [:thumb_tiny, :thumb_small, :thumb] end)
+      |> Enum.map(fn {name, _} -> "#{name}.gif" end)
+
+    ["full.mp4", "rendered.png"] ++ webm_versions ++ mp4_versions ++ gif_versions
+  end
+
+  @spec process(Result.t(), Path.t(), Processors.version_list()) :: Processors.edit_script()
   def process(analysis, file, versions) do
     dimensions = analysis.dimensions
     duration = analysis.duration
     stripped = strip(file)
     preview = preview(duration, file)
-    palette = gif_palette(file, duration)
     webm = scale_webm_only(file, dimensions, dimensions)
 
     {:ok, intensities} = Intensities.file(preview)
 
-    scaled =
-      Enum.flat_map(versions, &scale_if_smaller(file, webm, palette, duration, dimensions, &1))
+    scaled = Enum.flat_map(versions, &scale(stripped, duration, dimensions, &1))
 
     %{
       replace_original: stripped,
@@ -22,8 +40,10 @@ defmodule Philomena.Processors.Mp4 do
     }
   end
 
-  def post_process(_analysis, _file), do: %{}
+  @spec post_process(Result.t(), Path.t()) :: Processors.edit_script()
+  def post_process(_analysis, _file), do: []
 
+  @spec intensities(Result.t(), Path.t()) :: Intensities.t()
   def intensities(analysis, file) do
     {:ok, intensities} = Intensities.file(preview(analysis.duration, file))
     intensities
@@ -59,31 +79,13 @@ defmodule Philomena.Processors.Mp4 do
     stripped
   end
 
-  defp scale_if_smaller(_file, webm, _palette, _duration, _dimensions, {:full, _target_dim}) do
-    [
-      {:symlink_original, "full.mp4"},
-      {:copy, webm, "full.webm"}
-    ]
-  end
-
-  defp scale_if_smaller(
-         file,
-         webm,
-         palette,
-         duration,
-         {width, height},
-         {thumb_name, {target_width, target_height}}
-       ) do
-    {webm, mp4} =
-      if width > target_width or height > target_height do
-        scale_videos(file, {width, height}, {target_width, target_height})
-      else
-        {file, webm}
-      end
+  
+  defp scale(file, duration, dimensions, {thumb_name, target_dimensions}) do
+    {webm, mp4} = scale_videos(file, dimensions, target_dimensions)
 
     cond do
       thumb_name in [:thumb, :thumb_small, :thumb_tiny] ->
-        gif = scale_gif(file, palette, duration, {target_width, target_height})
+        gif = scale_gif(file, duration, dimensions, target_dimensions)
 
         [
           {:copy, webm, "#{thumb_name}.webm"},
@@ -100,10 +102,9 @@ defmodule Philomena.Processors.Mp4 do
   end
 
   defp scale_videos(file, dimensions, target_dimensions) do
-    {width, height} = box_dimensions(dimensions, target_dimensions)
+    filter = scale_filter(dimensions, target_dimensions)
     webm = Briefly.create!(extname: ".webm")
     mp4 = Briefly.create!(extname: ".mp4")
-    scale_filter = "scale=w=#{width}:h=#{height}"
 
     {_output, 0} =
       System.cmd("ffmpeg", [
@@ -198,52 +199,19 @@ defmodule Philomena.Processors.Mp4 do
 
     webm
   end
-
-  defp scale_gif(file, palette, duration, {width, height}) do
+  
+  defp scale_gif(file, duration, dimensions, target_dimensions) do
+    {width, height} = box_dimensions(dimensions, target_dimensions)
     gif = Briefly.create!(extname: ".gif")
-    scale_filter = "scale=w=#{width}:h=#{height}:force_original_aspect_ratio=decrease"
-    palette_filter = "paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle"
-    rate_filter = rate_filter(duration)
-    filter_graph = "[0:v]#{scale_filter},#{rate_filter}[x];[x][1:v]#{palette_filter}"
 
-    {_output, 0} =
-      System.cmd("ffmpeg", [
-        "-loglevel",
-        "0",
-        "-y",
-        "-i",
-        file,
-        "-i",
-        palette,
-        "-lavfi",
-        filter_graph,
-        "-r",
-        "2",
-        gif
-      ])
+    GifPreview.preview(file, gif, duration, {width, height})
 
     gif
   end
-
-  defp gif_palette(file, duration) do
-    palette = Briefly.create!(extname: ".png")
-    palette_filter = "palettegen=stats_mode=diff"
-    rate_filter = rate_filter(duration)
-    filter_graph = "#{rate_filter},#{palette_filter}"
-
-    {_output, 0} =
-      System.cmd("ffmpeg", [
-        "-loglevel",
-        "0",
-        "-y",
-        "-i",
-        file,
-        "-vf",
-        filter_graph,
-        palette
-      ])
-
-    palette
+  
+  defp scale_filter(dimensions, target_dimensions) do
+    {width, height} = box_dimensions(dimensions, target_dimensions)
+    "scale=w=#{width}:h=#{height},setsar=1"
   end
 
   # x264 requires image dimensions to be a multiple of 2
@@ -255,8 +223,4 @@ defmodule Philomena.Processors.Mp4 do
 
     {new_width, new_height}
   end
-
-  # Avoid division by zero
-  def rate_filter(duration) when duration > 0.5, do: "fps=1/#{duration / 10},settb=1/2,setpts=N"
-  def rate_filter(_duration), do: "setpts=N/TB/2"
 end
