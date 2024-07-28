@@ -522,7 +522,7 @@ defmodule Philomena.Users.User do
     provisioning_uri = %URI{
       scheme: "otpauth",
       host: "totp",
-      path: "/#{@booru_name}:#{user.email}"
+      path: "/#{@booru_name}:#{user.email}",
       query:
         URI.encode_query(%{
           secret: secret,
