@@ -14,7 +14,7 @@ defmodule Philomena.Topics do
   alias Philomena.NotificationWorker
 
   use Philomena.Subscriptions,
-    actor_types: ~w(Topic),
+    on_delete: :clear_topic_notification,
     id_name: :topic_id
 
   @doc """
@@ -91,31 +91,13 @@ defmodule Philomena.Topics do
     Exq.enqueue(Exq, "notifications", NotificationWorker, ["Topics", [topic.id, post.id]])
   end
 
-  def perform_notify([topic_id, post_id]) do
-    topic = get_topic!(topic_id)
-    post = Posts.get_post!(post_id)
+  def perform_notify([topic_id, _post_id]) do
+    topic =
+      topic_id
+      |> get_topic!()
+      |> Repo.preload(:user)
 
-    forum =
-      topic
-      |> Repo.preload(:forum)
-      |> Map.fetch!(:forum)
-
-    subscriptions =
-      forum
-      |> Repo.preload(:subscriptions)
-      |> Map.fetch!(:subscriptions)
-
-    Notifications.notify(
-      post,
-      subscriptions,
-      %{
-        actor_id: topic.id,
-        actor_type: "Topic",
-        actor_child_id: post.id,
-        actor_child_type: "Post",
-        action: "posted a new topic in #{forum.name}"
-      }
-    )
+    Notifications.create_forum_topic_notification(topic.user, topic)
   end
 
   @doc """
@@ -241,5 +223,20 @@ defmodule Philomena.Topics do
     topic
     |> Topic.title_changeset(attrs)
     |> Repo.update()
+  end
+
+  @doc """
+  Removes all topic notifications for a given topic and user.
+
+  ## Examples
+
+      iex> clear_topic_notification(topic, user)
+      :ok
+
+  """
+  def clear_topic_notification(%Topic{} = topic, user) do
+    Notifications.clear_forum_post_notification(topic, user)
+    Notifications.clear_forum_topic_notification(topic, user)
+    :ok
   end
 end

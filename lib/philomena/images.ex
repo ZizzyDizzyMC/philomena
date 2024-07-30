@@ -22,7 +22,8 @@ defmodule Philomena.Images do
   alias Philomena.IndexWorker
   alias Philomena.ImageFeatures.ImageFeature
   alias Philomena.SourceChanges.SourceChange
-  alias Philomena.Notifications.Notification
+  alias Philomena.Notifications.ImageCommentNotification
+  alias Philomena.Notifications.ImageMergeNotification
   alias Philomena.NotificationWorker
   alias Philomena.TagChanges.Limits
   alias Philomena.TagChanges.TagChange
@@ -38,7 +39,7 @@ defmodule Philomena.Images do
   alias Philomena.Users.User
 
   use Philomena.Subscriptions,
-    actor_types: ~w(Image),
+    on_delete: :clear_image_notification,
     id_name: :image_id
 
   @doc """
@@ -906,12 +907,40 @@ defmodule Philomena.Images do
 
     Repo.insert_all(Subscription, subscriptions, on_conflict: :nothing)
 
-    {count, nil} =
-      Notification
-      |> where(actor_type: "Image", actor_id: ^source.id)
-      |> Repo.delete_all()
+    comment_notifications =
+      from cn in ImageCommentNotification,
+        where: cn.image_id == ^source.id,
+        select: %{
+          user_id: cn.user_id,
+          image_id: ^target.id,
+          comment_id: cn.comment_id,
+          read: cn.read,
+          created_at: cn.created_at,
+          updated_at: cn.updated_at
+        }
 
-    {:ok, count}
+    merge_notifications =
+      from mn in ImageMergeNotification,
+        where: mn.target_id == ^source.id,
+        select: %{
+          user_id: mn.user_id,
+          target_id: ^target.id,
+          source_id: mn.source_id,
+          read: mn.read,
+          created_at: mn.created_at,
+          updated_at: mn.updated_at
+        }
+
+    {comment_notification_count, nil} =
+      Repo.insert_all(ImageCommentNotification, comment_notifications, on_conflict: :nothing)
+
+    {merge_notification_count, nil} =
+      Repo.insert_all(ImageMergeNotification, merge_notifications, on_conflict: :nothing)
+
+    Repo.delete_all(exclude(comment_notifications, :select))
+    Repo.delete_all(exclude(merge_notifications, :select))
+
+    {:ok, {comment_notification_count, merge_notification_count}}
   end
 
   def migrate_sources(source, target) do
@@ -931,23 +960,24 @@ defmodule Philomena.Images do
   end
 
   def perform_notify([source_id, target_id]) do
+    source = get_image!(source_id)
     target = get_image!(target_id)
 
-    subscriptions =
-      target
-      |> Repo.preload(:subscriptions)
-      |> Map.fetch!(:subscriptions)
+    Notifications.create_image_merge_notification(target, source)
+  end
 
-    Notifications.notify(
-      nil,
-      subscriptions,
-      %{
-        actor_id: target.id,
-        actor_type: "Image",
-        actor_child_id: nil,
-        actor_child_type: nil,
-        action: "merged ##{source_id} into"
-      }
-    )
+  @doc """
+  Removes all image notifications for a given image and user.
+
+  ## Examples
+
+      iex> clear_image_notification(image, user)
+      :ok
+
+  """
+  def clear_image_notification(%Image{} = image, user) do
+    Notifications.clear_image_comment_notification(image, user)
+    Notifications.clear_image_merge_notification(image, user)
+    :ok
   end
 end

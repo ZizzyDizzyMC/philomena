@@ -72,29 +72,12 @@ defmodule Philomena.Comments do
   end
 
   def perform_notify(comment_id) do
-    comment = get_comment!(comment_id)
+    comment =
+      comment_id
+      |> get_comment!()
+      |> Repo.preload([:user, :image])
 
-    image =
-      comment
-      |> Repo.preload(:image)
-      |> Map.fetch!(:image)
-
-    subscriptions =
-      image
-      |> Repo.preload(:subscriptions)
-      |> Map.fetch!(:subscriptions)
-
-    Notifications.notify(
-      comment,
-      subscriptions,
-      %{
-        actor_id: image.id,
-        actor_type: "Image",
-        actor_child_id: comment.id,
-        actor_child_type: "Comment",
-        action: "commented on"
-      }
-    )
+    Notifications.create_image_comment_notification(comment.user, comment.image, comment)
   end
 
   @doc """

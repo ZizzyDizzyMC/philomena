@@ -121,29 +121,12 @@ defmodule Philomena.Posts do
   end
 
   def perform_notify(post_id) do
-    post = get_post!(post_id)
+    post =
+      post_id
+      |> get_post!()
+      |> Repo.preload([:user, :topic])
 
-    topic =
-      post
-      |> Repo.preload(:topic)
-      |> Map.fetch!(:topic)
-
-    subscriptions =
-      topic
-      |> Repo.preload(:subscriptions)
-      |> Map.fetch!(:subscriptions)
-
-    Notifications.notify(
-      post,
-      subscriptions,
-      %{
-        actor_id: topic.id,
-        actor_type: "Topic",
-        actor_child_id: post.id,
-        actor_child_type: "Post",
-        action: "posted a new reply in"
-      }
-    )
+    Notifications.create_forum_post_notification(post.user, post.topic, post)
   end
 
   @doc """

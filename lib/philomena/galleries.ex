@@ -15,11 +15,10 @@ defmodule Philomena.Galleries do
   alias Philomena.GalleryReorderWorker
   alias Philomena.Notifications
   alias Philomena.NotificationWorker
-  alias Philomena.Notifications.{Notification, UnreadNotification}
   alias Philomena.Images
 
   use Philomena.Subscriptions,
-    actor_types: ~w(Gallery),
+    on_delete: :clear_gallery_notification,
     id_name: :gallery_id
 
   @doc """
@@ -95,21 +94,8 @@ defmodule Philomena.Galleries do
       |> select([i], i.image_id)
       |> Repo.all()
 
-    unread_notifications =
-      UnreadNotification
-      |> join(:inner, [un], _ in assoc(un, :notification))
-      |> where([_, n], n.actor_type == "Gallery")
-      |> where([_, n], n.actor_id == ^gallery.id)
-
-    notifications =
-      Notification
-      |> where(actor_type: "Gallery")
-      |> where(actor_id: ^gallery.id)
-
     Multi.new()
     |> Multi.delete(:gallery, gallery)
-    |> Multi.delete_all(:unread_notifications, unread_notifications)
-    |> Multi.delete_all(:notifications, notifications)
     |> Repo.transaction()
     |> case do
       {:ok, %{gallery: gallery}} ->
@@ -269,25 +255,10 @@ defmodule Philomena.Galleries do
     Exq.enqueue(Exq, "notifications", NotificationWorker, ["Galleries", [gallery.id, image.id]])
   end
 
-  def perform_notify([gallery_id, image_id]) do
+  def perform_notify([gallery_id, _image_id]) do
     gallery = get_gallery!(gallery_id)
 
-    subscriptions =
-      gallery
-      |> Repo.preload(:subscriptions)
-      |> Map.fetch!(:subscriptions)
-
-    Notifications.notify(
-      gallery,
-      subscriptions,
-      %{
-        actor_id: gallery.id,
-        actor_type: "Gallery",
-        actor_child_id: image_id,
-        actor_child_type: "Image",
-        action: "added images to"
-      }
-    )
+    Notifications.create_gallery_image_notification(gallery)
   end
 
   def reorder_gallery(gallery, image_ids) do
@@ -360,4 +331,18 @@ defmodule Philomena.Galleries do
 
   defp position_order(%{order_position_asc: true}), do: [asc: :position]
   defp position_order(_gallery), do: [desc: :position]
+
+  @doc """
+  Removes all gallery notifications for a given gallery and user.
+
+  ## Examples
+
+      iex> clear_gallery_notification(gallery, user)
+      :ok
+
+  """
+  def clear_gallery_notification(%Gallery{} = gallery, user) do
+    Notifications.clear_gallery_image_notification(gallery, user)
+    :ok
+  end
 end

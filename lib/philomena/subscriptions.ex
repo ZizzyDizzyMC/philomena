@@ -2,37 +2,40 @@ defmodule Philomena.Subscriptions do
   @moduledoc """
   Common subscription logic.
 
-  `use Philomena.Subscriptions` requires the following properties:
-
-  - `:actor_types`
-    This is the "actor_type" in the notifications table.
-    For `Philomena.Images`, this would be `["Image"]`.
+  `use Philomena.Subscriptions` requires the following option:
 
   - `:id_name`
     This is the name of the object field in the subscription table.
-    For `Philomena.Images`, this would be `:image_id`.
+    For `m:Philomena.Images`, this would be `:image_id`.
 
   The following functions and documentation are produced in the calling module:
   - `subscribed?/2`
   - `subscriptions/2`
   - `create_subscription/2`
   - `delete_subscription/2`
-  - `clear_notification/2`
   - `maybe_subscribe_on/4`
   """
 
   import Ecto.Query, warn: false
   alias Ecto.Multi
 
-  alias Philomena.Notifications
   alias Philomena.Repo
 
   defmacro __using__(opts) do
-    # For Philomena.Images, this yields ["Image"]
-    actor_types = Keyword.fetch!(opts, :actor_types)
-
     # For Philomena.Images, this yields :image_id
     field_name = Keyword.fetch!(opts, :id_name)
+
+    # Deletion callback
+    on_delete =
+      case Keyword.get(opts, :on_delete) do
+        nil ->
+          []
+
+        callback when is_atom(callback) ->
+          quote do
+            apply(__MODULE__, unquote(callback), [object, user])
+          end
+      end
 
     # For Philomena.Images, this yields Philomena.Images.Subscription
     subscription_module = Module.concat(__CALLER__.module, Subscription)
@@ -109,7 +112,7 @@ defmodule Philomena.Subscriptions do
 
       """
       def delete_subscription(object, user) do
-        clear_notification(object, user)
+        unquote(on_delete)
 
         Philomena.Subscriptions.delete_subscription(
           unquote(subscription_module),
@@ -117,23 +120,6 @@ defmodule Philomena.Subscriptions do
           object,
           user
         )
-      end
-
-      @doc """
-      Deletes any active notifications for a subscription.
-
-      ## Examples
-
-          iex> clear_notification(object, user)
-          :ok
-
-      """
-      def clear_notification(object, user) do
-        for type <- unquote(actor_types) do
-          Philomena.Subscriptions.clear_notification(type, object, user)
-        end
-
-        :ok
       end
 
       @doc """
@@ -197,14 +183,6 @@ defmodule Philomena.Subscriptions do
   def delete_subscription(subscription_module, field_name, object, user) do
     struct!(subscription_module, [{field_name, object.id}, {:user_id, user.id}])
     |> Repo.delete()
-  end
-
-  @doc false
-  def clear_notification(type, object, user) do
-    case user do
-      nil -> nil
-      _ -> Notifications.delete_unread_notification(type, object.id, user)
-    end
   end
 
   @doc false
