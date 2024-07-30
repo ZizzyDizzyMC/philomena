@@ -2,8 +2,8 @@ defmodule PhilomenaWeb.SettingView do
   use PhilomenaWeb, :view
 
   # get variables
-  @booru_style "{#Application.compile_env(:philomena, :booru_style)}"
-  @booru_name "{#Application.compile_env(:philomena, :booru_name)}"
+  @booru_style {#Application.compile_env(:philomena, :booru_style)}
+  @booru_name {#Application.compile_env(:philomena, :booru_name)}
   def theme_options(conn) do
     [  
       [key: "#{@booru_name} Default", value: "default", data: [theme_path: static_path(conn, "/css/#{@booru_style}.css")]],
