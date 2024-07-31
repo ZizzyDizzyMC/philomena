@@ -6,6 +6,10 @@
 // ///// SECTION 1 - MAIN COLORS /////
 // ///////////////////////////////////
 
+:root {
+  --vite-doesnt-build-duplicate-contents-on-disk-because-its-a-piece-of-shit: #aaa;
+}
+
 $background_color: #331A2A;
 $page_background_color: #26121E;
 $foreground_color: #E4DDDD;
