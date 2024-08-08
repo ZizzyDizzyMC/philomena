@@ -1,121 +1,72 @@
 defmodule Philomena.Notifications.Creator do
   @moduledoc """
   Internal notifications creation logic.
-
-  Supports two formats for notification creation:
-  - Key-only (`create_single/4`): The object's id is the only other component inserted.
-  - Non-key (`create_double/6`): The object's id plus another object's id are inserted.
-
-  See the respective documentation for each function for more details.
   """
 
   import Ecto.Query, warn: false
   alias Philomena.Repo
 
   @doc """
-  Propagate notifications for a notification table type containing a single reference column.
-
-  The single reference column (`name`, `object`) is also part of the unique key for the table,
-  and is used to select which object to act on.
+  Propagate notifications for a notification table type.
 
   Returns `{:ok, count}`, where `count` is the number of affected rows.
 
-  ## Example
+  ## Examples
 
-      iex> create_single(
-      ...>   where(GallerySubscription, gallery_id: ^gallery.id),
-      ...>   GalleryImageNotification,
-      ...>   nil,
-      ...>   :gallery_id,
-      ...>   gallery
+      iex> broadcast_notification(
+      ...>   from: {GallerySubscription, gallery_id: gallery.id},
+      ...>   into: GalleryImageNotification,
+      ...>   select: [gallery_id: gallery.id],
+      ...>   unique_key: :gallery_id
+      ...> )
+      {:ok, 2}
+
+      iex> broadcast_notification(
+      ...>   notification_author: user,
+      ...>   from: {ImageSubscription, image_id: image.id},
+      ...>   into: ImageCommentNotification,
+      ...>   select: [image_id: image.id, comment_id: comment.id],
+      ...>   unique_key: :image_id
       ...> )
       {:ok, 2}
 
   """
-  def create_single(subscription, notification, user, name, object) do
-    subscription
-    |> create_notification_query(user, name, object)
-    |> create_notification(notification, name)
+  def broadcast_notification(opts) do
+    opts = Keyword.validate!(opts, [:notification_author, :from, :into, :select, :unique_key])
+
+    notification_author = Keyword.get(opts, :notification_author, nil)
+    {subscription_schema, filters} = Keyword.fetch!(opts, :from)
+    notification_schema = Keyword.fetch!(opts, :into)
+    select_keywords = Keyword.fetch!(opts, :select)
+    unique_key = Keyword.fetch!(opts, :unique_key)
+
+    subscription_schema
+    |> subscription_query(notification_author)
+    |> where(^filters)
+    |> convert_to_notification(select_keywords)
+    |> insert_notifications(notification_schema, unique_key)
   end
 
-  @doc """
-  Propagate notifications for a notification table type containing two reference columns.
+  defp convert_to_notification(subscription, extra) do
+    now = dynamic([_], type(^DateTime.utc_now(:second), :utc_datetime))
 
-  The first reference column (`name1`, `object1`) is also part of the unique key for the table,
-  and is used to select which object to act on.
+    base = %{
+      user_id: dynamic([s], s.user_id),
+      created_at: now,
+      updated_at: now,
+      read: false
+    }
 
-  Returns `{:ok, count}`, where `count` is the number of affected rows.
+    extra =
+      Map.new(extra, fn {field, value} ->
+        {field, dynamic([_], type(^value, :integer))}
+      end)
 
-  ## Example
-
-      iex> create_double(
-      ...>   where(ImageSubscription, image_id: ^image.id),
-      ...>   ImageCommentNotification,
-      ...>   user,
-      ...>   :image_id,
-      ...>   image,
-      ...>   :comment_id,
-      ...>   comment
-      ...> )
-      {:ok, 2}
-
-  """
-  def create_double(subscription, notification, user, name1, object1, name2, object2) do
-    subscription
-    |> create_notification_query(user, name1, object1, name2, object2)
-    |> create_notification(notification, name1)
+    from(subscription, select: ^Map.merge(base, extra))
   end
 
-  @doc """
-  Clear all unread notifications using the given query.
-
-  Returns `{:ok, count}`, where `count` is the number of affected rows.
-  """
-  def clear(query, user) do
-    if user do
-      {count, nil} =
-        query
-        |> where(user_id: ^user.id)
-        |> Repo.delete_all()
-
-      {:ok, count}
-    else
-      {:ok, 0}
-    end
-  end
-
-  # TODO: the following cannot be accomplished with a single query expression
-  # due to this Ecto bug: https://github.com/elixir-ecto/ecto/issues/4430
-
-  defp create_notification_query(subscription, user, name, object) do
-    now = DateTime.utc_now(:second)
-
-    from s in subscription_query(subscription, user),
-      select: %{
-        ^name => type(^object.id, :integer),
-        user_id: s.user_id,
-        created_at: ^now,
-        updated_at: ^now,
-        read: false
-      }
-  end
-
-  defp create_notification_query(subscription, user, name1, object1, name2, object2) do
-    now = DateTime.utc_now(:second)
-
-    from s in subscription_query(subscription, user),
-      select: %{
-        ^name1 => type(^object1.id, :integer),
-        ^name2 => type(^object2.id, :integer),
-        user_id: s.user_id,
-        created_at: ^now,
-        updated_at: ^now,
-        read: false
-      }
-  end
-
-  defp subscription_query(subscription, user) do
-    case user do
+  defp subscription_query(subscription, notification_author) do
+    case notification_author do
       %{id: user_id} ->
         # Avoid sending notifications to the user which performed the action.
         from s in subscription,
@@ -127,13 +78,13 @@ defmodule Philomena.Notifications.Creator do
     end
   end
 
-  defp create_notification(query, notification, name) do
+  defp insert_notifications(query, notification, unique_key) do
     {count, nil} =
       Repo.insert_all(
         notification,
         query,
         on_conflict: {:replace_all_except, [:created_at]},
-        conflict_target: [name, :user_id]
+        conflict_target: [unique_key, :user_id]
       )
 
     {:ok, count}

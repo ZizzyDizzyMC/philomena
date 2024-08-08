@@ -24,7 +24,6 @@ defmodule Philomena.Images do
   alias Philomena.SourceChanges.SourceChange
   alias Philomena.Notifications.ImageCommentNotification
   alias Philomena.Notifications.ImageMergeNotification
-  alias Philomena.NotificationWorker
   alias Philomena.TagChanges.Limits
   alias Philomena.TagChanges.TagChange
   alias Philomena.Tags
@@ -95,11 +94,6 @@ defmodule Philomena.Images do
 
     Multi.new()
     |> Multi.insert(:image, image)
-    |> Multi.run(:name_caches, fn repo, %{image: image} ->
-      image
-      |> Image.cache_changeset()
-      |> repo.update()
-    end)
     |> Multi.run(:added_tag_count, fn repo, %{image: image} ->
       tag_ids = image.added_tags |> Enum.map(& &1.id)
       tags = Tag |> where([t], t.id in ^tag_ids)
@@ -386,8 +380,6 @@ defmodule Philomena.Images do
       updated_at: now,
       ip: attribution[:ip],
       fingerprint: attribution[:fingerprint],
-      user_agent: attribution[:user_agent],
-      referrer: attribution[:referrer],
       added: added
     }
   end
@@ -523,8 +515,6 @@ defmodule Philomena.Images do
       tag_name_cache: tag.name,
       ip: attribution[:ip],
       fingerprint: attribution[:fingerprint],
-      user_agent: attribution[:user_agent],
-      referrer: attribution[:referrer],
       added: added
     }
   end
@@ -603,13 +593,13 @@ defmodule Philomena.Images do
     |> Multi.run(:migrate_interactions, fn _, %{} ->
       {:ok, Interactions.migrate_interactions(image, duplicate_of_image)}
     end)
+    |> Multi.run(:notification, &notify_merge(&1, &2, image, duplicate_of_image))
     |> Repo.transaction()
     |> process_after_hide()
     |> case do
       {:ok, result} ->
         reindex_image(duplicate_of_image)
         Comments.reindex_comments(duplicate_of_image)
-        notify_merge(image, duplicate_of_image)
 
         {:ok, result}
 
@@ -955,14 +945,7 @@ defmodule Philomena.Images do
     |> Repo.update()
   end
 
-  def notify_merge(source, target) do
-    Exq.enqueue(Exq, "notifications", NotificationWorker, ["Images", [source.id, target.id]])
-  end
-
-  def perform_notify([source_id, target_id]) do
-    source = get_image!(source_id)
-    target = get_image!(target_id)
-
+  defp notify_merge(_repo, _changes, source, target) do
     Notifications.create_image_merge_notification(target, source)
   end
 
