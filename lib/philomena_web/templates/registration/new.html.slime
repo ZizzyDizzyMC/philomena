@@ -42,6 +42,11 @@ h1 Register
         a<> href="/pages/rules" site rules
         ' before you dive in - they contain a quick introduction on how to
         ' use the site.
+    p
+      strong
+        ' By signing up you're confirming that you've read the 
+        a<> href="/pages/rules" site rules
+        ' and agree to abide by the terms set forth in them.
 
   br
 
