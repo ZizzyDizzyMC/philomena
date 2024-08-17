@@ -14,7 +14,7 @@ defmodule PhilomenaWeb.SettingView do
       [key: "Twibooru Default", value: "twibooru-default", data: [theme_path: ~p"/css/twibooru-default.css"]],
       [key: "Furbooru Default", value: "furbooru-default", data: [theme_path: ~p"/css/furbooru-default.css"]],
       [key: "Bronyhub Default", value: "bronyhub-default", data: [theme_path: ~p"/css/bronyhub-default.css"]],
-      [key: "Ponybooru Default", value: "ponybooru-default", data: [theme_path: ~p"/css/ponybooru-default.css"]]
+      [key: "Ponybooru Default", value: "ponybooru-default", data: [theme_path: ~p"/css/ponybooru-default.css"]],
       [key: "Memebooru Default", value: "memebooru-default", data: [theme_path: ~p"/css/memebooru-default.css"]]
     ]
   end
