@@ -14,16 +14,15 @@ defmodule PhilomenaWeb.ReportView do
   def report_categories do
     [
       "Rule #0: Breaking a golden rule": "Rule #0",
-      "Rule #2: DNP, content theft, pay content, trace/bad edit": "Rule #2",
-      "Rule #3: Bad tagging/sourcing": "Rule #3",
-      "Rule #4: Image not MLP /obligatory pony": "Rule #4",
-      "Rule #5: Whining about filterable content": "Rule #5",
-      "Rule #6: Explicitly Banned Content": "Rule #6",
-      "Rule #7: Spam, off-topic, or general site abuse": "Rule #7",
-      "Rule #8: Above topic rating (NOT swear words)": "Rule #8",
-      "Rule #9: Privacy violation": "Rule #9",
-      "Rule #10: Commissions": "Rule #10",
-      "Rule #11: Namecalling, trolling, discrimination": "Rule #11",
+      "Rule #1: DNP, content theft, pay content, trace/bad edit": "Rule #1",
+      "Rule #2: Bad tagging/sourcing": "Rule #2",
+      "Rule #3: Unrelated content": "Rule #3",
+      "Rule #4: Explicitly Banned Content": "Rule #4",
+      "Rule #5: Spam, off-topic, or general site abuse": "Rule #5",
+      "Rule #6: Above topic rating (NOT swear words)": "Rule #6",
+      "Rule #7: Privacy violation": "Rule #7",
+      "Rule #8: Commissions": "Rule #8",
+      "Rule #9: Namecalling, trolling, discrimination, incitement, harassment": "Rule #9",
       "Other (please explain)": "Other",
       "Takedown request": "Takedown request"
     ]

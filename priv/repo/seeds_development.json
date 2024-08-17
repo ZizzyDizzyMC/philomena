@@ -1,5 +1,11 @@
 {
   "users": [{
+      "name": "Deer Lord of Sweet Rolls",
+      "email": "antlers@example.com",
+      "password": "xkcd password generator makes for good entropy",
+      "role": "admin"
+    },
+    {
       "name": "Hot Pocket Consumer",
       "email": "moderator@example.com",
       "password": "willdeleteglimmerposts4hotpockets",

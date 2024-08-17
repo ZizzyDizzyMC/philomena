@@ -352,7 +352,7 @@ defmodule Philomena.Users.User do
     |> TagList.propagate_tag_list(:watched_tag_list, :watched_tag_ids)
     |> validate_inclusion(
       :theme,
-      ~W(default dark red olddefault ponerpics-default manebooru-fuchsia manebooru-green manebooru-orange twibooru-default furbooru-default bronyhub-default ponybooru-default)
+      ~W(default dark red olddefault ponerpics-default manebooru-fuchsia manebooru-green manebooru-orange twibooru-default furbooru-default bronyhub-default ponybooru-default memebooru-default)
     )
     |> validate_inclusion(:images_per_page, 15..500)
     |> validate_inclusion(:comments_per_page, 15..100)
