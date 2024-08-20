@@ -212,6 +212,10 @@ defmodule PhilomenaWeb.AppView do
     Application.get_env(:philomena, :booru_dark_style)
   end
   
+  def booru_theme_color do
+    Application.get_env(:philomena, :booru_theme_color)
+  end
+  
   def booru_alt_donation do
     Application.get_env(:philomena, :booru_alt_donation)
   end
