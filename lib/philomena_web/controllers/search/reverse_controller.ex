@@ -3,6 +3,7 @@ defmodule PhilomenaWeb.Search.ReverseController do
 
   alias Philomena.DuplicateReports.SearchQuery
   alias Philomena.DuplicateReports
+  alias Philomena.Interactions
 
   plug PhilomenaWeb.ScraperCachePlug
   plug PhilomenaWeb.ScraperPlug, params_key: "image", params_name: "image"
@@ -16,15 +17,34 @@ defmodule PhilomenaWeb.Search.ReverseController do
     case DuplicateReports.execute_search_query(image_params) do
       {:ok, images} ->
         changeset = DuplicateReports.change_search_query(%SearchQuery{})
-        render(conn, "index.html", title: "Reverse Search", images: images, changeset: changeset)
+        interactions = Interactions.user_interactions(images, conn.assigns.current_user)
+
+        render(conn, "index.html",
+          title: "Reverse Search",
+          layout_class: "layout--wide",
+          images: images,
+          changeset: changeset,
+          interactions: interactions
+        )
 
       {:error, changeset} ->
-        render(conn, "index.html", title: "Reverse Search", images: nil, changeset: changeset)
+        render(conn, "index.html",
+          title: "Reverse Search",
+          layout_class: "layout--wide",
+          images: nil,
+          changeset: changeset
+        )
     end
   end
 
   def create(conn, _params) do
     changeset = DuplicateReports.change_search_query(%SearchQuery{})
-    render(conn, "index.html", title: "Reverse Search", images: nil, changeset: changeset)
+
+    render(conn, "index.html",
+      title: "Reverse Search",
+      layout_class: "layout--wide",
+      images: nil,
+      changeset: changeset
+    )
   end
 end
