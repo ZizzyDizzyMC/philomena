@@ -1,0 +1,79 @@
+/* As originally seen on Ponybooru */
+@import "themes/base/dark";
+
+$background_color: #331A2A;
+$page-background-color: #26121E;
+$foreground-color: #E4DDDD;
+
+$base-color: #A04A82;
+
+$primary-light-color: #6E1766;
+$success-light-color: #144714;
+$danger-light-color: #66211f;
+$warning-light-color: #7d4825;
+
+$destroyed-content-color: #382c2f;
+
+$meta-color: #2C1625;
+
+$header-color: #76235A;
+$header-field-color: #571943;
+$header-secondary-color: #471A38;
+$header-admin-color: #3b1d1d;
+
+$block-header-color: #572945;
+$block-header-link-text-color: #DF49C1;
+
+$block-header-light-color: #402135;
+$block-header-light-link-text-color: #C85ABA;
+
+$border-color: #502A41;
+
+$media-box-color: #5E3650;
+
+$link-color: #D241B5;
+$link-hover-color: #E29A97;
+
+$fave-color: #a18e27;
+$vote-up-color: #5b9b26;
+$vote-down-color: #da3412;
+$hide-color: #da3412;
+
+$assistant-color: #511b4e;
+$unread-message-color: #ff8800;
+
+$tag-normal-color: #4aa158;
+$tag-category-rating-color: #418dd9;
+$tag-category-spoiler-color: #d49b39;
+$tag-category-origin-color: #6f66d6;
+$tag-category-oc-color: #b157b7;
+$tag-category-error-color: #d45460;
+$tag-category-character-color: #4aaabf;
+$tag-category-content-official-color: #b9b541;
+$tag-category-content-fanmade-color: #cc8eb5;
+$tag-category-species-color: #b16b50;
+$tag-category-body-type-color: #b8b8b8;
+
+$commission-category-color: #e07b27;
+
+$site-notice-color: #07070a;
+
+$image-overlay-color: #ffffff;
+$image-overlay-background-color: #000000;
+
+@mixin dark-theme-mutations;
+
+/* Put any color variable overrides here.
+ *
+ * Note: due to (intentional and bad) behavior of Vite,
+ * this needs to contain something unique that the other
+ * themes do not have, as Vite does not compile what it considers
+ * "inputs with identical contents", and it does not seem to care
+ * about differences in $variables. So please change something about
+ * the value below, or make up a random variable if you're not changing
+ * any color variables here.
+ */
+
+:root {
+  --keep: #111111;
+}
