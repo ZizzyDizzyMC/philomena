@@ -4,7 +4,10 @@ defmodule PhilomenaWeb.LayoutView do
   import PhilomenaWeb.Config
   alias PhilomenaWeb.ImageView
   alias Philomena.Config
+  alias Philomena.Users.User
   alias Plug.Conn
+
+  @themes User.themes()
 
   def layout_class(conn) do
     conn.assigns[:layout_class] || "layout--narrow"
@@ -69,23 +72,18 @@ defmodule PhilomenaWeb.LayoutView do
     Config.get(:footer)
   end
 
-  def stylesheet_path(_conn, %{theme: "dark"}), do: ~p"/css/dark.css"
-  def stylesheet_path(_conn, %{theme: "red"}), do: ~p"/css/red.css"
-  def stylesheet_path(_conn, %{theme: "olddefault"}), do: ~p"/css/olddefault.css"
-  def stylesheet_path(_conn, %{theme: "ponerpics-default"}), do: ~p"/css/ponerpics-default.css"
-  def stylesheet_path(_conn, %{theme: "manebooru-fuchsia"}), do: ~p"/css/manebooru-fuchsia.css"
-  def stylesheet_path(_conn, %{theme: "manebooru-green"}), do: ~p"/css/manebooru-green.css"
-  def stylesheet_path(_conn, %{theme: "manebooru-orange"}), do: ~p"/css/manebooru-orange.css"
-  def stylesheet_path(_conn, %{theme: "twibooru-default"}), do: ~p"/css/twibooru-default.css"
-  def stylesheet_path(_conn, %{theme: "furbooru-default"}), do: ~p"/css/furbooru-default.css"
-  def stylesheet_path(_conn, %{theme: "bronyhub-default"}), do: ~p"/css/bronyhub-default.css"
-  def stylesheet_path(_conn, %{theme: "ponybooru-default"}), do: ~p"/css/ponybooru-default.css"
-  def stylesheet_path(_conn, %{theme: "memebooru-default"}), do: ~p"/css/memebooru-default.css"
-  def stylesheet_path(conn, _user), do: static_path(conn, "/css/#{booru_style()}.css")
-  def dark_stylesheet_path(conn), do: static_path(conn, "/css/#{booru_dark_style()}.css")
+  def stylesheet_path(conn, %{theme: theme})
+      when theme in @themes,
+      do: static_path(conn, "/css/#{theme}.css")
+
+  def stylesheet_path(_conn, _user),
+    do: ~p"/css/#{booru_style()}.css"
+
+  def light_stylesheet_path(_conn),
+    do: ~p"/css/light-blue.css"
 
   def theme_name(%{theme: theme}), do: theme
-  def theme_name(_user), do: "default"
+  def theme_name(_user), do: "#{booru_style()}.css"
 
   def artist_tags(tags),
     do: Enum.filter(tags, &(&1.namespace == "artist"))

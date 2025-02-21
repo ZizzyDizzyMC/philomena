@@ -1,22 +1,26 @@
 defmodule PhilomenaWeb.SettingView do
   use PhilomenaWeb, :view
+  alias Philomena.Users.User
 
-  def theme_options(conn) do
-    [  
-      [key: "#{booru_name()} Default", value: "default", data: [theme_path: static_path(conn, "/css/#{booru_style()}.css")]],
-      [key: "Dark", value: "dark", data: [theme_path: ~p"/css/dark.css"]],
-      [key: "Red", value: "red", data: [theme_path: ~p"/css/red.css"]],
-      [key: "Philomena Light", value: "olddefault", data: [theme_path: ~p"/css/olddefault.css"]],
-      [key: "Ponerpics Default", value: "ponerpics-default", data: [theme_path: ~p"/css/ponerpics-default.css"]],
-      [key: "Manebooru Fuchsia", value: "manebooru-fuchsia", data: [theme_path: ~p"/css/manebooru-fuchsia.css"]],
-      [key: "Manebooru Green", value: "manebooru-green", data: [theme_path: ~p"/css/manebooru-green.css"]],
-      [key: "Manebooru Orange", value: "manebooru-orange", data: [theme_path: ~p"/css/manebooru-orange.css"]],
-      [key: "Twibooru Default", value: "twibooru-default", data: [theme_path: ~p"/css/twibooru-default.css"]],
-      [key: "Furbooru Default", value: "furbooru-default", data: [theme_path: ~p"/css/furbooru-default.css"]],
-      [key: "Bronyhub Default", value: "bronyhub-default", data: [theme_path: ~p"/css/bronyhub-default.css"]],
-      [key: "Ponybooru Default", value: "ponybooru-default", data: [theme_path: ~p"/css/ponybooru-default.css"]],
-      [key: "Memebooru Default", value: "memebooru-default", data: [theme_path: ~p"/css/memebooru-default.css"]]
+  def themes do
+    [
+	  Ponybooru: "ponybooru-default"
+	  #{booru_name()}: "#{booru_style()"
+      Dark: "dark",
+      Light: "light"
     ]
+  end
+
+  def theme_colors do
+    Enum.map(User.theme_colors(), fn name ->
+      {String.capitalize(name), name}
+    end)
+  end
+
+  def theme_paths do
+    Map.new(User.themes(), fn name ->
+      {name, static_path(PhilomenaWeb.Endpoint, "/css/#{name}.css")}
+    end)
   end
 
   def scale_options do

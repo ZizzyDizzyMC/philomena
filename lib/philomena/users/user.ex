@@ -350,13 +350,10 @@ defmodule Philomena.Users.User do
       :show_sidebar_and_watched_images
     ])
     |> TagList.propagate_tag_list(:watched_tag_list, :watched_tag_ids)
-    |> validate_inclusion(
-      :theme,
-      ~W(default dark red olddefault ponerpics-default manebooru-fuchsia manebooru-green manebooru-orange twibooru-default furbooru-default bronyhub-default ponybooru-default memebooru-default)
-    )
-    |> validate_inclusion(:images_per_page, 15..500)
-    |> validate_inclusion(:comments_per_page, 15..100)
-	|> validate_inclusion(:scale_large_images, ["false", "partscaled", "true"])
+    |> validate_inclusion(:theme, themes())
+    |> validate_inclusion(:images_per_page, 1..500)
+    |> validate_inclusion(:comments_per_page, 1..100)
+    |> validate_inclusion(:scale_large_images, ["false", "partscaled", "true"])
     |> validate_query(:watched_images_query_str, &Query.compile(&1, user: user, watch: true))
     |> validate_query(:watched_images_exclude_str, &Query.compile(&1, user: user, watch: true))
   end
@@ -609,4 +606,18 @@ defmodule Philomena.Users.User do
 
   defp remove_backup_code(user, token),
     do: user.otp_backup_codes |> Enum.reject(&Password.verify_pass(token, &1))
+
+  def theme_colors do
+    ~W(red orange yellow blue green purple teal pink gray)
+  end
+
+  def theme_names do
+    ~W(dark light)
+  end
+
+  def themes do
+    for name <- theme_names(), color <- theme_colors() do
+      "#{name}-#{color}"
+    end
+  end
 end
